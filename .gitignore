@@ -1,0 +1,9 @@
+# environment variables
+.env
+
+# build files
+target/
+
+# IntelliJ
+.idea
+*.iml
