@@ -22,18 +22,18 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Column(nullable = false)
     private boolean enabled;
 
-    @Column(nullable = false)
+    @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 }
