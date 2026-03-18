@@ -2,6 +2,7 @@ package app.authservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.boot.autoconfigure.graphql.ConditionalOnGraphQlSchema;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,11 +17,18 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false, name = "first_name")
+    private String firstName;
+
+    @Column(nullable = false, name = "last_name")
+    private String lastName;
+
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
