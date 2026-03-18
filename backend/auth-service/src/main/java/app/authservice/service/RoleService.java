@@ -20,4 +20,5 @@ public class RoleService {
                                 name + " " +
                         "is missing from the database. Check Flyway migrations."));
     }
+
 }

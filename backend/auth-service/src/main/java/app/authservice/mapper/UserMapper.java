@@ -2,6 +2,7 @@ package app.authservice.mapper;
 
 import app.authservice.entity.User;
 import app.authservice.web.dto.request.UserRegisterRequestDto;
+import app.authservice.web.dto.response.UserResponseDto;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -18,5 +19,15 @@ public class UserMapper {
                 .enabled(true)
                 .emailVerified(false)
                 .build();
+    }
+
+    public UserResponseDto toResponse(User user){
+        return new UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getCreatedAt()
+        );
     }
 }

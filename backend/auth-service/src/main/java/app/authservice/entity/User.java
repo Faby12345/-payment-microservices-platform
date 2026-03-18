@@ -3,6 +3,10 @@ package app.authservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.boot.autoconfigure.graphql.ConditionalOnGraphQlSchema;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -16,6 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class) // this is for enable the @CreatedDate and @LastModifiedDate to not insert them manually
 public class User {
 
     @Id
@@ -41,9 +46,11 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
