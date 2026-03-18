@@ -1,4 +1,13 @@
 package app.authservice.dto;
 
-public record UserResponseDto(String username, String Status) {
+import java.time.Instant;
+import java.util.UUID;
+
+public record UserResponseDto(
+        UUID id,
+        String email,
+        String firstName,
+        String lastName,
+        Instant createdAt
+) {
 }
