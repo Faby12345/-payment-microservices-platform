@@ -1,4 +1,4 @@
-package app.authservice.web.dto;
+package app.authservice.web.dto.response;
 
 import java.time.Instant;
 import java.util.UUID;

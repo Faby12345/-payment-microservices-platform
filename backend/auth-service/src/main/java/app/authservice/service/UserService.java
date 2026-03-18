@@ -1,14 +1,7 @@
 package app.authservice.service;
 
-import app.authservice.dto.UserLoginRequestDto;
-import app.authservice.dto.UserRegisterRequestDto;
-import app.authservice.dto.UserResponseDto;
-import app.authservice.entity.User;
 import app.authservice.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.Instant;
-import java.util.UUID;
 
 public class UserService {
     private final UserRepository userRepository;
