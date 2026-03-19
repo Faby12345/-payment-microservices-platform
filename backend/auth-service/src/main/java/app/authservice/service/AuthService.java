@@ -63,8 +63,8 @@ public class AuthService {
         try{
             User savedUser = userRepository.save(newUser);
             log.info("feat(auth-service-REGISTER ): User with id: {}, name: {} created SUCCESFULLY",
-                    newUser.getId(),
-                    newUser.getFirstName() + " " + newUser.getLastName());
+                    savedUser.getId(),
+                    savedUser.getFirstName() + " " + newUser.getLastName());
             return userMapper.toResponse(savedUser);
 
         } catch (DataIntegrityViolationException e) {
@@ -75,6 +75,8 @@ public class AuthService {
 
 
     }
+
+
 
 
 }
