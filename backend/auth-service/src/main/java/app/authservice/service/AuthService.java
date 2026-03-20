@@ -5,6 +5,7 @@ import app.authservice.entity.User;
 import app.authservice.mapper.UserMapper;
 import app.authservice.repository.RoleRepository;
 import app.authservice.repository.UserRepository;
+import app.authservice.web.dto.request.UserLoginRequestDto;
 import app.authservice.web.dto.request.UserRegisterRequestDto;
 import app.authservice.web.dto.response.UserResponseDto;
 import app.authservice.web.exception.EmailAlreadyExistsException;
@@ -48,16 +49,19 @@ public class AuthService {
         }
 
         String passwordHash = passwordEncoder.encode(dto.password());
-        Role role = roleService.findRoleByName("USER");
+
 
         /**
          * When we add a role for user, it will automatically insert into
          * user_role table a new role for the user (CHECK USER ENTITY CLASS
          * - the roles field annotaion)
          */
+        Set<Role> userRoles = new HashSet<>();
+        Role role = roleService.findRoleByName("USER");
+        userRoles.add(role);
 
         User newUser = userMapper.toEntity(dto, passwordHash);
-        newUser.getRoles().add(role);
+        newUser.setRoles(userRoles);
 
 
         try{
@@ -74,6 +78,15 @@ public class AuthService {
         }
 
 
+    }
+
+    public UserResponseDto login(UserLoginRequestDto dto){
+        log.info("User with email: {} trys to login", dto.email());
+        if(!userRepository.existsByEmail(dto.email())){
+            log.warn("User with email: {} DON'T EXISTS", dto.email());
+        }
+        //String passwordHash =  passwordEncoder.encode(dto.password());
+        return null;
     }
 
 

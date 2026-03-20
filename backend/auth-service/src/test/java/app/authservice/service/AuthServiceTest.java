@@ -70,7 +70,6 @@ public class AuthServiceTest {
         when(roleService.findRoleByName(anyString())).thenReturn(new Role());
 
         when(userMapper.toEntity(any(), anyString())).thenReturn(mockUser);
-
         // Force the DB error
         when(userRepository.save(any())).thenThrow(DataIntegrityViolationException.class);
 
