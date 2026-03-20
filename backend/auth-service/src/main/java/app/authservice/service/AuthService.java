@@ -80,6 +80,7 @@ public class AuthService {
 
     }
 
+
     public UserResponseDto login(UserLoginRequestDto dto){
         log.info("User with email: {} trys to login", dto.email());
         if(!userRepository.existsByEmail(dto.email())){
