@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Component
 public class UserMapper {
+
     public User toEntity(UserRegisterRequestDto dto, String encodedPassword) {
         return User.builder()
                 .firstName(dto.firstName())
