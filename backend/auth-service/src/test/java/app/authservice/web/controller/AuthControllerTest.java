@@ -76,7 +76,7 @@ public class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Validation Failed"));
 
-        // 3. The "Pro" Verification: Ensure the service was NEVER called
+        // Ensure the service was NEVER called
         verifyNoInteractions(authService);
     }
     @Test
