@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ============================================================
+   📁 src/index.css
+   ROLE: Tailwind CSS v4 entry point and design system tokens
+   ============================================================ */
+
+/* 3. Design tokens — ALL custom values live here in @theme */
+@theme {
+  /* Colors */
+  --color-brand-bg:           #08080f;
+  --color-brand-card:         #0f0f1a;
+  --color-brand-accent:       #7c5cfc;
+  --color-brand-accent-light: #9b80ff;
+  --color-brand-error:        #ff4d6a;
+  --color-brand-success:      #00d68f;
+  --color-brand-warning:      #ffb020;
+  --color-brand-secondary:    #7e7e9a;
+  --color-brand-muted:        #4a4a62;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Shadows */
+  --shadow-glow:    0 0 40px color-mix(in srgb, var(--color-brand-accent) 15%, transparent);
+  --shadow-glow-sm: 0 0 16px color-mix(in srgb, var(--color-brand-accent) 20%, transparent);
+  --shadow-card:    0 8px 32px color-mix(in srgb, #000 40%, transparent);
+
+  /* Border radius */
+  --radius-card: 1.25rem;
+
+  /* Animations */
+  --animate-shake:    shake 0.4s ease-in-out;
+  --animate-fade-in:  fadeIn 0.3s ease-out;
+  --animate-slide-up: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 4. Keyframes (defined outside @theme, at root level) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60%  { transform: translateX(-6px); }
+  40%, 80%  { transform: translateX(6px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 5. Base styles */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-brand-bg);
+    color: #f0f0f5;
+    min-height: 100vh;
+  }
+
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #0f0f1a inset !important;
+    -webkit-text-fill-color: #f0f0f5 !important;
+  }
+}
+
+/* 6. Custom utility classes */
+@utility glass-card {
+  background-color: color-mix(in srgb, white 4%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, white 8%, transparent);
+}
+
+@utility input-base {
+  background-color: color-mix(in srgb, white 5%, transparent);
+  border: 1px solid color-mix(in srgb, white 8%, transparent);
+  color: #f0f0f5;
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 1rem 1rem 0.25rem 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: var(--color-brand-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-accent) 20%, transparent);
+  }
+}
+
+@utility gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-accent),
+    var(--color-brand-accent-light)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+/* ── Orb animations ───────────────────────────────────────── */
+@keyframes orb-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -50px) scale(1.08); }
+  66%       { transform: translate(-25px, 30px) scale(0.94); }
+}
+@keyframes orb-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-50px, 40px) scale(1.06); }
+  66%       { transform: translate(30px, -25px) scale(0.96); }
+}
+@keyframes orb-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(25px, 50px) scale(1.1); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+@keyframes border-spin {
+  to { --border-angle: 360deg; }
+}
+
+/* ── Glowing card border ──────────────────────────────────── */
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@utility glow-border {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: conic-gradient(
+            from var(--border-angle),
+            transparent 0%,
+            color-mix(in srgb, var(--color-brand-accent) 60%, transparent) 15%,
+            transparent 30%,
+            transparent 70%,
+            color-mix(in srgb, var(--color-brand-accent-light) 40%, transparent) 85%,
+            transparent 100%
+    );
+    -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+    mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-spin 4s linear infinite;
+  }
+}
+
+/* ── Social button base ───────────────────────────────────── */
+@utility social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, white 10%, transparent);
+  background: color-mix(in srgb, white 4%, transparent);
+  color: #f0f0f5;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, white 8%, transparent);
+    border-color: color-mix(in srgb, white 18%, transparent);
+  }
+}

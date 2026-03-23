@@ -73,8 +73,11 @@ public class User implements UserDetails {
         if (roles == null || roles.isEmpty()) {
             return Set.of();
         }
+        /** Appended ROLE_ because in in spring security the collections for
+         * auth need to have a prefix of ROLE_
+        */
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toSet());
     }
 

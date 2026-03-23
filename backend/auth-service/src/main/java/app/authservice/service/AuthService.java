@@ -87,11 +87,8 @@ public class AuthService {
             log.warn("User with email: {} DON'T EXISTS", dto.email());
         }
 
-        String passwordHash =  passwordEncoder.encode(dto.password());
-        if(!userRepository.existsByEmailAndPasswordHash(dto.email(), passwordHash)){
-            log.warn("Email or password invalid!");
-            throw new RuntimeException("Email or password invalid!");
-        }
+
+
 
 
         return null;
