@@ -80,12 +80,20 @@ public class AuthService {
 
     }
 
+
     public UserResponseDto login(UserLoginRequestDto dto){
         log.info("User with email: {} trys to login", dto.email());
         if(!userRepository.existsByEmail(dto.email())){
             log.warn("User with email: {} DON'T EXISTS", dto.email());
         }
-        //String passwordHash =  passwordEncoder.encode(dto.password());
+
+        String passwordHash =  passwordEncoder.encode(dto.password());
+        if(!userRepository.existsByEmailAndPasswordHash(dto.email(), passwordHash)){
+            log.warn("Email or password invalid!");
+            throw new RuntimeException("Email or password invalid!");
+        }
+
+
         return null;
     }
 
