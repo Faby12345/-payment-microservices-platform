@@ -259,7 +259,7 @@ export const AuthPage: React.FC = () => {
                 </svg>
               </div>
               <h1 className="gradient-text text-3xl font-bold tracking-tight mb-1">
-                PaymentSphere
+                SecurePay
               </h1>
               <p className="text-[var(--color-brand-secondary)] text-sm">
                 {mode === 'login'
