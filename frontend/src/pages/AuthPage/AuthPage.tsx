@@ -450,7 +450,7 @@ export const AuthPage: React.FC = () => {
                       <button
                           onClick={toggleMode}
                           className="text-white font-semibold
-                               hover:text-[var(--color-brand-accent)] transition-colors duration-200"
+                                hover:text-[var(--color-brand-accent)] transition-colors duration-200"
                       >
                         {mode === 'login' ? 'Sign up for free' : 'Sign in here'}
                       </button>
