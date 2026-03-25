@@ -4,13 +4,17 @@ import app.authservice.entity.RefreshToken;
 import app.authservice.entity.User;
 import app.authservice.repository.RefreshTokenRepository;
 import app.authservice.security.JwtProperties;
+import app.authservice.web.exception.TokenRefreshException;
+import app.authservice.web.exception.TokenRevokedException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
@@ -30,5 +34,30 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
+    @Transactional
+    public RefreshToken verifyExpirationAndStatus(RefreshToken token) {
+        if(token.isExpired()){
+            refreshTokenRepository.delete(token);
+            throw new TokenRefreshException(token.getToken(), "Refresh token has expired. Please make a new sign-in request.");
+        }
+
+        if(token.isRevoked()){
+            throw new TokenRevokedException(token.getToken(), "This session has been revoked. Please log in again.");
+        }
+
+        return token;
+
+    }
+    @Transactional
+    public void deleteAllUserTokens(User user) {
+        log.info("Deleting all refresh tokens for user with id: {}", user.getId());
+        refreshTokenRepository.deleteByUser(user);
+    }
+
+    @Transactional
+    public void cleanupExpiredTokens() {
+        log.info("Cleaning up expired refresh tokens from database");
+        refreshTokenRepository.deleteByExpiryDateBefore(Instant.now());
+    }
 
 }
