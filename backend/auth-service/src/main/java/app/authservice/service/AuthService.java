@@ -72,7 +72,7 @@ public class AuthService {
             User savedUser = userRepository.save(newUser);
             log.info("feat(auth-service-REGISTER ): User with id: {}, name: {} created SUCCESFULLY",
                     savedUser.getId(),
-                    savedUser.getFirstName() + " " + newUser.getLastName());
+                    savedUser.getFirstName() + " " + savedUser.getLastName());
             return userMapper.toResponse(savedUser);
 
         } catch (DataIntegrityViolationException e) {
@@ -124,7 +124,11 @@ public class AuthService {
         User user = token.getUser();
         String accessToken = jwtService.generateToken(user);
         return new TokenResponseDto(accessToken, refreshToken);
+    }
 
+    public void logout(String refreshToken){
+        refreshTokenService.deleteByToken(refreshToken);
+        log.info("User with refresh token: {} logged out", refreshToken);
     }
 
 

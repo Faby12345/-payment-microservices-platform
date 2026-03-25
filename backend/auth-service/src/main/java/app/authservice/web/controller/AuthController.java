@@ -15,12 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     private final AuthService authService;
-    public AuthController(AuthService authService){
-        this.authService = authService;
-    }
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@RequestBody @Valid UserRegisterRequestDto dto){
@@ -39,7 +37,7 @@ public class AuthController {
         ResponseCookie springCookie = ResponseCookie.from("refresh_token", tokenData.refreshToken())
                 .httpOnly(true)
                 .secure(false) // (IF IS SET TO TRUE) Ensures it's only sent over HTTPS(this might need to disable this for localhost testing)
-                .path("/api/v1/auth/refresh") // The browser will ONLY send this cookie to your refresh endpoint, nowhere else.
+                .path("/api/v1/auth") // The browser will ONLY send this cookie to this endpoint, nowhere else.
                 .maxAge(7 * 24 * 60 * 60) // 7 days in seconds
                 .sameSite("Strict") // Protects against CSRF
                 .build();
@@ -56,6 +54,25 @@ public class AuthController {
         TokenResponseDto tokenData = authService.generateAccessToken(refreshToken);
         return ResponseEntity.ok()
                 .body(new AuthSuccessResponse(tokenData.accessToken()));
+
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = "refresh_token") String refreshToken)
+    {
+        authService.logout(refreshToken);
+
+        ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false) // Set to false if testing locally without HTTPS
+                .path("/api/v1/auth")
+                .maxAge(0) // tells the browser to delete it
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .build(); // .build() completes the response with no JSON body
 
     }
 
