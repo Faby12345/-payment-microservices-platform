@@ -59,5 +59,9 @@ public class RefreshTokenService {
         log.info("Cleaning up expired refresh tokens from database");
         refreshTokenRepository.deleteByExpiryDateBefore(Instant.now());
     }
+    public RefreshToken findByToken(String token){
+        return refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenRefreshException(token, "Refresh token not found"));
+    }
 
 }
