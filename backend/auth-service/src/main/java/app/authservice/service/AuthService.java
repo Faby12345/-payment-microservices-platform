@@ -1,41 +1,45 @@
 package app.authservice.service;
 
+import app.authservice.entity.RefreshToken;
 import app.authservice.entity.Role;
 import app.authservice.entity.User;
 import app.authservice.mapper.UserMapper;
 import app.authservice.repository.RoleRepository;
 import app.authservice.repository.UserRepository;
+import app.authservice.security.JwtProperties;
+import app.authservice.security.JwtService;
 import app.authservice.web.dto.request.UserLoginRequestDto;
 import app.authservice.web.dto.request.UserRegisterRequestDto;
+import app.authservice.web.dto.response.TokenResponseDto;
 import app.authservice.web.dto.response.UserResponseDto;
 import app.authservice.web.exception.EmailAlreadyExistsException;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final RoleService roleService;
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       UserMapper userMapper,
-                       RoleService roleService)
-    {
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userMapper = userMapper;
-        this.roleService = roleService;
-    }
+
 
 
 
@@ -68,7 +72,7 @@ public class AuthService {
             User savedUser = userRepository.save(newUser);
             log.info("feat(auth-service-REGISTER ): User with id: {}, name: {} created SUCCESFULLY",
                     savedUser.getId(),
-                    savedUser.getFirstName() + " " + newUser.getLastName());
+                    savedUser.getFirstName() + " " + savedUser.getLastName());
             return userMapper.toResponse(savedUser);
 
         } catch (DataIntegrityViolationException e) {
@@ -81,17 +85,50 @@ public class AuthService {
     }
 
 
-    public UserResponseDto login(UserLoginRequestDto dto){
+    public TokenResponseDto login(UserLoginRequestDto dto){
         log.info("User with email: {} trys to login", dto.email());
-        if(!userRepository.existsByEmail(dto.email())){
-            log.warn("User with email: {} DON'T EXISTS", dto.email());
-        }
+
+        Authentication authenticationRequest = UsernamePasswordAuthenticationToken
+                .unauthenticated(dto.email(), dto.password());
+
+        /**
+         * this automatically throws exception (BadCredentialsException)
+         * and stop execution if the user / passwrod is wrong
+         * it compers the passwrod hashes. etc (all the logic)
+         * */
+        Authentication authenticationResponse =
+                this.authenticationManager.authenticate(authenticationRequest);
+
+        // ( .orElseThrow() just in case, though the auth manager already proved they exist).
+        User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
 
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        String accessToken = jwtService.generateToken(user);
+
+        return new TokenResponseDto(accessToken, refreshToken.getToken());
+    }
 
 
+    /**
+     * Because in RefreshEntityToken we have: @ManyToOne(fetch = FetchType.LAZY)
+     * when we will try: token.getUser(); it will recive a LazyInitializationException,
+     * so in order to not recive that, @Transactional(readOnly = true) prevents that
+     * (the db connection stays open after findByToken is called)
+     * */
+    @Transactional(readOnly = true)
+    public TokenResponseDto generateAccessToken(String refreshToken){
+        RefreshToken token = refreshTokenService.findByToken(refreshToken);
+        token = refreshTokenService.verifyExpirationAndStatus(token);
+        User user = token.getUser();
+        String accessToken = jwtService.generateToken(user);
+        return new TokenResponseDto(accessToken, refreshToken);
+    }
 
-        return null;
+    public void logout(String refreshToken){
+        refreshTokenService.deleteByToken(refreshToken);
+        log.info("User with refresh token: {} logged out", refreshToken);
     }
 
 

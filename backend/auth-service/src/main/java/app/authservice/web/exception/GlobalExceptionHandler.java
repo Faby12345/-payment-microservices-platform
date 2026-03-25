@@ -48,4 +48,29 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(TokenRevokedException.class)
+    public ResponseEntity<ErrorResponse> handleTokenRevoked(TokenRevokedException ex) {
+        log.warn("Security Event: Attempted use of revoked token - {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED) // 401
+                .body(new ErrorResponse(
+                        "Authentication Failed",
+                        List.of(ex.getMessage()),
+                        Instant.now()
+                ));
+    }
+
+    @ExceptionHandler(TokenRefreshException.class) // Assuming you created this one for expired tokens
+    public ResponseEntity<ErrorResponse> handleTokenRefresh(TokenRefreshException ex) {
+        log.info("Token refresh failed: {}", ex.getMessage());
+
+        // 403 Forbidden is often used here to tell the frontend "You must fully re-authenticate"
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        "Session Expired",
+                        List.of(ex.getMessage()),
+                        Instant.now()
+                ));
+    }
+
 }

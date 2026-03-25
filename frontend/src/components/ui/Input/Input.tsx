@@ -117,10 +117,10 @@ export const Input: React.FC<InputProps> = ({
                   /* Default (unfocused + empty): vertically centred */
                   'top-1/2 -translate-y-1/2 text-sm',
                   /* Focused OR filled: float up */
-                  'peer-focus:top-3 peer-focus:translate-y-0 peer-focus:text-[10px]',
+                  'peer-focus:top-1 peer-focus:translate-y-0 peer-focus:text-[10px]',
                   'peer-focus:text-[var(--color-brand-accent)]',
                   /* Filled but not focused */
-                  (hasValue) && '!top-3 !translate-y-0 !text-[10px]',
+                  (hasValue) && '!top-1 !translate-y-0 !text-[10px]',
                   error && 'peer-focus:text-[var(--color-brand-error)]',
               )}
           >
