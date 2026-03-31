@@ -67,7 +67,7 @@ docker-compose up -d
 ### 3. Start the Backend
 ./mvnw spring-boot:run
 
-###4. Start the Frontend
+### 4. Start the Frontend
 npm install
 npm start
 
