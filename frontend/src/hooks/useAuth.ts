@@ -67,6 +67,7 @@ export function useAuth() {
     setError(null);
     try {
       const response = await registerUser(credentials);
+      console.log("set")
       setUser(response.user);
       return response;
     } catch (err) {

@@ -18,14 +18,15 @@ export interface RegisterCredentials {
 }
 
 export interface AuthUser {
-  id:       string;
-  email:    string;
-  fullName: string;
+  id:        string;
+  email:     string;
+  firstName: string;
+  lastName:  string;
 }
 
 export interface AuthResponse {
-  user:  AuthUser;
-  token: string;
+  user:   AuthUser;
+  token?: string;
 }
 
 export interface AuthError {

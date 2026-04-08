@@ -10,11 +10,7 @@ import {
   type AuthUser
 } from '../types/auth.types';
 
-const MOCK_USER: AuthUser = {
-  id: 'usr_12345',
-  email: 'test@example.com',
-  fullName: 'John Doe'
-};
+const API_BASE_URL = 'http://localhost:8080/api/v1/auth';
 
 /**
  * loginUser
@@ -27,8 +23,15 @@ export async function loginUser(credentials: LoginCredentials): Promise<AuthResp
       if (credentials.email === 'wrong@test.com') {
         reject({ message: 'Invalid email or password' });
       } else {
+        // Mock data that follows the new AuthUser structure
+        const user: AuthUser = {
+          id: 'usr_12345',
+          email: credentials.email,
+          firstName: 'John',
+          lastName: 'Doe'
+        };
         resolve({
-          user: { ...MOCK_USER, email: credentials.email },
+          user,
           token: 'mock_jwt_token_xxxxxx'
         });
       }
@@ -38,24 +41,47 @@ export async function loginUser(credentials: LoginCredentials): Promise<AuthResp
 
 /**
  * registerUser
- * Simulates an async registration request.
- * Throws error if email contains 'taken'.
+ * Calls the backend API registration endpoint.
  */
 export async function registerUser(credentials: RegisterCredentials): Promise<AuthResponse> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (credentials.email.includes('taken')) {
-        reject({ message: 'This email is already registered', field: 'email' });
-      } else {
-        resolve({
-          user: {
-            id: 'usr_new_' + Math.random().toString(36).substr(2, 5),
-            email: credentials.email,
-            fullName: credentials.fullName
-          },
-          token: 'mock_jwt_token_yyyyyy'
-        });
-      }
-    }, 1200);
+  // Split fullName into firstName and lastName (backend requirement)
+  const nameParts = credentials.fullName.trim().split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ' '; // Space if missing to satisfy NotBlank
+
+  const response = await fetch(`${API_BASE_URL}/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      firstName,
+      lastName,
+      email: credentials.email,
+      password: credentials.password,
+    }),
   });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    // Backend returns ErrorResponse with a list of error strings
+    const errorMessage = data.errors && data.errors.length > 0 
+      ? data.errors[0] 
+      : (data.message || 'Registration failed');
+      
+    throw {
+      message: errorMessage,
+    };
+  }
+
+  // Map backend UserResponseDto to frontend AuthUser
+  return {
+    user: {
+      id: data.id,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    }
+  };
 }
