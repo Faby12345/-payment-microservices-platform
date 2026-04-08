@@ -26,7 +26,9 @@ export interface AuthUser {
 
 export interface AuthResponse {
   user:   AuthUser;
-  token?: string;
+}
+export interface LoginResponse {
+  accessToken: string;
 }
 
 export interface AuthError {

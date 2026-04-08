@@ -7,7 +7,7 @@ import {
   type LoginCredentials,
   type RegisterCredentials,
   type AuthResponse,
-  type AuthUser
+  type AuthUser, type LoginResponse
 } from '../types/auth.types';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1/auth';
@@ -17,26 +17,39 @@ const API_BASE_URL = 'http://localhost:8080/api/v1/auth';
  * Simulates an async login request with mock latency.
  * Throws error if email is 'wrong@test.com'.
  */
-export async function loginUser(credentials: LoginCredentials): Promise<AuthResponse> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (credentials.email === 'wrong@test.com') {
-        reject({ message: 'Invalid email or password' });
-      } else {
-        // Mock data that follows the new AuthUser structure
-        const user: AuthUser = {
-          id: 'usr_12345',
-          email: credentials.email,
-          firstName: 'John',
-          lastName: 'Doe'
-        };
-        resolve({
-          user,
-          token: 'mock_jwt_token_xxxxxx'
-        });
-      }
-    }, 1200);
+export async function loginUser(credentials: LoginCredentials): Promise<LoginResponse> {
+  const email = credentials.email;
+  const password = credentials.password;
+
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: email,
+      password: password
+    }),
+
   });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    // Backend returns ErrorResponse with a list of error strings
+    const errorMessage = data.errors && data.errors.length > 0
+        ? data.errors[0]
+        : (data.message || 'Login failed');
+
+    throw {
+      message: errorMessage,
+    };
+  }
+
+  return {
+    accessToken: data.accessToken,
+  };
 }
 
 /**
