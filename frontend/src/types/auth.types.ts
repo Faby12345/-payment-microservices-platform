@@ -22,6 +22,7 @@ export interface AuthUser {
   email:     string;
   firstName: string;
   lastName:  string;
+  roles:     string[];  // Java Set<String> -> TypeScript string[]
 }
 
 export interface AuthResponse {

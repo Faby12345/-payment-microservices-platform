@@ -6,14 +6,15 @@
 import {
   type LoginCredentials,
   type RegisterCredentials,
+  type AuthUser,
   type AuthResponse,
   type LoginResponse
 } from '../types/auth.types';
 
 import {api} from "../api/axios";
 import axios from "axios";
+import {setAccessToken} from "../api/axios";
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/auth';
 
 /**
  * loginUser
@@ -24,35 +25,26 @@ export async function loginUser(credentials: LoginCredentials): Promise<LoginRes
   const email = credentials.email;
   const password = credentials.password;
 
-  const response = await fetch(`${API_BASE_URL}/login`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email: email,
-      password: password
-    }),
+  try {
+    const { data } = await api.post('/auth/login', {
+      email,
+      password,
+    });
+    setAccessToken(data.accessToken)
 
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    // Backend returns ErrorResponse with a list of error strings
-    const errorMessage = data.errors && data.errors.length > 0
-        ? data.errors[0]
-        : (data.message || 'Login failed');
-
-    throw {
-      message: errorMessage,
+    return {
+      accessToken: data.accessToken
     };
-  }
+  } catch (error: unknown){
 
-  return {
-    accessToken: data.accessToken,
-  };
+    // Path: error.response.data.errors[0]
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.errors?.[0] || 'An error occurred';
+      throw { message };
+    }
+    // it is not an axios error
+    throw { message: 'A system error occurred' };
+  }
 }
 
 /**
@@ -77,7 +69,8 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Au
         id: data.id,
         email: data.email,
         firstName: data.firstName,
-        lastName: data.lastName
+        lastName: data.lastName,
+        roles: data.roles
       }
     };
   } catch (error: unknown){
@@ -90,4 +83,33 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Au
       // it is not an axios error
       throw { message: 'A system error occurred' };
   }
+}
+
+/**
+ * getCurrentUser
+ * Fetches the currently authenticated user's profile from the /me endpoint.
+ * Note: No parameters needed because the interceptor adds the token!
+ */
+export async function getCurrentUser(): Promise<AuthUser> {
+  try {
+    const { data } = await api.get('/auth/me');
+    return data; // Backend returns UserResponseDto which matches AuthUser
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.errors?.[0] || 'Failed to fetch user profile';
+      throw { message };
+    }
+    throw { message: 'A system error occurred' };
+  }
+}
+
+export async function logout() : Promise<void> {
+  try {
+    await api.post('/auth/logut');
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Logout on backend failed", error);
+    }
+  }
+
 }
