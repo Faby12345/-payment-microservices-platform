@@ -3,50 +3,56 @@
 // ROLE: Manages authentication state and actions
 // ============================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { 
   type AuthUser,
   type AuthError,
   type LoginCredentials,
   type RegisterCredentials
 } from '../types/auth.types';
-import { loginUser, registerUser } from '../services/authService';
+import { loginUser, registerUser, getCurrentUser } from '../services/authService';
 
 export function useAuth() {
-  /**
-   * @hook useState — user
-   * STORES: authenticated user object or null
-   * WHY LOCAL: single-page app, no cross-route persistence needed here
-   */
   const [user, setUser] = useState<AuthUser | null>(null);
-
-  /**
-   * @hook useState — isLoading
-   * STORES: loading state for auth operations
-   * WHY LOCAL: provides UI feedback during API calls
-   */
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  /**
-   * @hook useState — error
-   * STORES: authentication-specific error messages
-   * WHY LOCAL: allows showing global error banners above forms
-   */
+  const [isInitializing, setIsInitializing] = useState<boolean>(true); // NEW: Startup check state
   const [error, setError] = useState<AuthError | null>(null);
 
   /**
+   * @hook useEffect — checkAuthOnStartup
+   * DOES: Silent refresh / session check when the app loads
+   */
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const userProfile = await getCurrentUser();
+        setUser(userProfile);
+      } catch (err) {
+        // Silently fail if no session is active - user stays null
+        console.debug("No active session on startup");
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  /**
    * @hook useCallback — login
-   * DOES: calls loginUser service, sets user or error state
-   * MEMOISED BECAUSE: passed as prop to AuthPage — stable ref avoids unnecessary child re-renders
-   * DEPS: [] — no external deps, service is a stable import
+   * DOES: 1. Get Token (via loginUser) 2. Get Profile (via getCurrentUser)
    */
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await loginUser(credentials);
-      setUser(response.user);
-      return response;
+      // Step 1: Login to get token (Interceptors handle storage)
+      await loginUser(credentials);
+      
+      // Step 2: Fetch full profile using the new token
+      const userProfile = await getCurrentUser();
+      
+      setUser(userProfile);
+      return { user: userProfile };
     } catch (err) {
       const authError = err as AuthError;
       setError(authError);
@@ -56,12 +62,6 @@ export function useAuth() {
     }
   }, []);
 
-  /**
-   * @hook useCallback — register
-   * DOES: calls registerUser service, sets user or error state
-   * MEMOISED BECAUSE: stable reference for form submission
-   * DEPS: [] — all logic is self-contained or uses stable service
-   */
   const register = useCallback(async (credentials: RegisterCredentials) => {
     setIsLoading(true);
     setError(null);
@@ -78,20 +78,16 @@ export function useAuth() {
     }
   }, []);
 
-  /**
-   * @hook useCallback — logout
-   * DOES: clears user state and errors
-   * MEMOISED BECAUSE: potentially used in navigation cleanup
-   * DEPS: [] — simple state reset
-   */
   const logout = useCallback(() => {
     setUser(null);
     setError(null);
+    // TODO: Add call to authService.logout() to clear cookies on backend
   }, []);
 
   return {
     user,
     isLoading,
+    isInitializing, // NEW: Expose initializing state for splash screens
     error,
     login,
     register,

@@ -1,5 +1,6 @@
 package app.authservice.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -13,16 +14,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
+@RequiredArgsConstructor
 @Service
 public class JwtService {
 
-    private String secretKey;
-
-    private long jwtExpiration;
+    private final JwtProperties jwtProperties;
 
     public String generateToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, jwtExpiration);
+        return buildToken(new HashMap<>(), userDetails, jwtProperties.getExpiration());
     }
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -41,7 +40,7 @@ public class JwtService {
                 .compact();
     }
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
         return Keys.hmacShaKeyFor(keyBytes);
     }
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
