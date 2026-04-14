@@ -10,6 +10,9 @@ import {
   type LoginResponse
 } from '../types/auth.types';
 
+import {api} from "../api/axios";
+import axios from "axios";
+
 const API_BASE_URL = 'http://localhost:8080/api/v1/auth';
 
 /**
@@ -62,39 +65,29 @@ export async function registerUser(credentials: RegisterCredentials): Promise<Au
   const firstName = nameParts[0] || '';
   const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ' '; // Space if missing to satisfy NotBlank
 
-  const response = await fetch(`${API_BASE_URL}/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  try {
+    const { data } = await api.post('/auth/register', {
       firstName,
       lastName,
       email: credentials.email,
       password: credentials.password,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    // Backend returns ErrorResponse with a list of error strings
-    const errorMessage = data.errors && data.errors.length > 0 
-      ? data.errors[0] 
-      : (data.message || 'Registration failed');
-      
-    throw {
-      message: errorMessage,
+    });
+    return {
+      user: {
+        id: data.id,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName
+      }
     };
-  }
+  } catch (error: unknown){
 
-  // Map backend UserResponseDto to frontend AuthUser
-  return {
-    user: {
-      id: data.id,
-      email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-    }
-  };
+    // Path: error.response.data.errors[0]
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.errors?.[0] || 'An error occurred';
+           throw { message };
+        }
+      // it is not an axios error
+      throw { message: 'A system error occurred' };
+  }
 }
