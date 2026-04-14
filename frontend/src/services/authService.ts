@@ -7,7 +7,7 @@ import {
   type LoginCredentials,
   type RegisterCredentials,
   type AuthResponse,
-  type AuthUser, type LoginResponse
+  type LoginResponse
 } from '../types/auth.types';
 
 const API_BASE_URL = 'http://localhost:8080/api/v1/auth';

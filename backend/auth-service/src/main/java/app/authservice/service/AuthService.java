@@ -13,6 +13,7 @@ import app.authservice.web.dto.request.UserRegisterRequestDto;
 import app.authservice.web.dto.response.TokenResponseDto;
 import app.authservice.web.dto.response.UserResponseDto;
 import app.authservice.web.exception.EmailAlreadyExistsException;
+import app.authservice.web.exception.ResourceNotFoundException;
 //import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,6 +108,8 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         String accessToken = jwtService.generateToken(user);
 
+        log.info("User with email: {} logged in SUCCESFULLY", dto.email());
+
         return new TokenResponseDto(accessToken, refreshToken.getToken());
     }
 
@@ -129,6 +132,13 @@ public class AuthService {
     public void logout(String refreshToken){
         refreshTokenService.deleteByToken(refreshToken);
         log.info("User with refresh token: {} logged out", refreshToken);
+    }
+
+    public UserResponseDto getUserProfile(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        return userMapper.toResponse(user);
     }
 
 

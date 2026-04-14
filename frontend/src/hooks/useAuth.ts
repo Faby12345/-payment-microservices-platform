@@ -34,6 +34,9 @@ export function useAuth() {
    */
   const [error, setError] = useState<AuthError | null>(null);
 
+
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
   /**
    * @hook useCallback — login
    * DOES: calls loginUser service, sets user or error state
