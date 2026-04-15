@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 @WebMvcTest(AuthController.class)
 @Import(SecurityConfig.class) // security rules active
@@ -48,7 +49,7 @@ public class AuthControllerTest {
     @Test
     void register_ShouldReturnCreated_WhenDataIsValid() throws Exception {
         // Define what the mock service returns
-        UserResponseDto response = new UserResponseDto(UUID.randomUUID(), "test@bank.com", "Alex", "Doe", Instant.now());
+        UserResponseDto response = new UserResponseDto(UUID.randomUUID(), "test@bank.com", "Alex", "Doe", Set.of("USER"), Instant.now());
         given(authService.register(any())).willReturn(response);
 
         //  Act & Assert: Perform the POST and check the outcome

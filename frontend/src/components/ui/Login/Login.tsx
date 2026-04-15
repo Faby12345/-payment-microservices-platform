@@ -26,7 +26,7 @@ export const Login: React.FC<LoginProps> = ({ onToggleMode }) => {
   }, []);
 
   const loginForm = useFormValidation<LoginCredentials>(
-    { email: '', password: '', rememberMe: false },
+    { email: 'test.test@test.com', password: '123123123', rememberMe: false },
     validateLogin,
   );
 

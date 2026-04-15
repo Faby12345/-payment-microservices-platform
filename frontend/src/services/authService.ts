@@ -102,14 +102,12 @@ export async function getCurrentUser(): Promise<AuthUser> {
     throw { message: 'A system error occurred' };
   }
 }
-
 export async function logout() : Promise<void> {
   try {
-    await api.post('/auth/logut');
+    await api.post('/auth/logout');
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       console.error("Logout on backend failed", error);
     }
   }
-
 }

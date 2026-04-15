@@ -10,7 +10,8 @@ import {
   type LoginCredentials,
   type RegisterCredentials
 } from '../types/auth.types';
-import { loginUser, registerUser, getCurrentUser } from '../services/authService';
+import { loginUser, registerUser, getCurrentUser, logout as logoutUser } from '../services/authService';
+import { setAccessToken } from '../api/axios';
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -26,10 +27,11 @@ export function useAuth() {
     const checkAuth = async () => {
       try {
         const userProfile = await getCurrentUser();
+        console.log("Startup Check: Profile fetched successfully:", userProfile);
         setUser(userProfile);
       } catch (err) {
-        // Silently fail if no session is active - user stays null
-        console.debug("No active session on startup");
+        console.error("Startup Session Check Failed (No active session):", err);
+        // We stay in null state (Login page) which is correct if no token exists
       } finally {
         setIsInitializing(false);
       }
@@ -78,10 +80,14 @@ export function useAuth() {
     }
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setError(null);
-    // TODO: Add call to authService.logout() to clear cookies on backend
+  const logout = useCallback(async () => {
+    try {
+      await logoutUser();
+    } finally {
+      setUser(null);
+      setError(null);
+      setAccessToken(null); // Clear local token
+    }
   }, []);
 
   return {

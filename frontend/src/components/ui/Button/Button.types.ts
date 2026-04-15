@@ -6,7 +6,7 @@
 import { type ReactNode } from 'react';
 
 export interface ButtonProps {
-  variant?:   'primary' | 'ghost' | 'danger';
+  variant?:   'primary' | 'secondary' | 'ghost' | 'danger';
   size?:      'sm' | 'md' | 'lg';
   isLoading?: boolean;
   disabled?:  boolean;

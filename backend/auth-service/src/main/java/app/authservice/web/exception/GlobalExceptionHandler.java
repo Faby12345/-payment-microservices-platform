@@ -35,6 +35,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("Validation Failed", errors, Instant.now()));
     }
 
+    @ExceptionHandler(org.springframework.web.bind.MissingRequestCookieException.class)
+    public ResponseEntity<ErrorResponse> handleMissingCookie(org.springframework.web.bind.MissingRequestCookieException ex) {
+        log.warn("Missing expected cookie: {}", ex.getCookieName());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Session missing", List.of("Please log in again"), Instant.now()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralExceptions(Exception ex) {
         // 'error' level and include the exception object 'ex'

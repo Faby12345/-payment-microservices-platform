@@ -121,12 +121,16 @@ public class AuthService {
      * (the db connection stays open after findByToken is called)
      * */
     @Transactional(readOnly = true)
-    public TokenResponseDto generateAccessToken(String refreshToken){
-        RefreshToken token = refreshTokenService.findByToken(refreshToken);
-        token = refreshTokenService.verifyExpirationAndStatus(token);
-        User user = token.getUser();
+    public TokenResponseDto generateAccessToken(String refreshTokenString){
+        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenString);
+        refreshToken = refreshTokenService.verifyExpirationAndStatus(refreshToken);
+        
+        // Re-fetch with EntityGraph to ensure roles are loaded for the JWT generator
+        User user = userRepository.findWithRolesById(refreshToken.getUser().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found during token refresh"));
+                
         String accessToken = jwtService.generateToken(user);
-        return new TokenResponseDto(accessToken, refreshToken);
+        return new TokenResponseDto(accessToken, refreshTokenString);
     }
 
     public void logout(String refreshToken){
@@ -134,6 +138,7 @@ public class AuthService {
         log.info("User with refresh token: {} logged out", refreshToken);
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDto getUserProfile(String email){
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
