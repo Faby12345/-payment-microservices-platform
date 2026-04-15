@@ -31,14 +31,13 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        console.log(`Interceptor: Error caught [${error.response?.status}] for ${originalRequest.url}`);
 
-        // If error is 401 and we haven't retried yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+            console.log("Interceptor: 401/403 detected, attempting refresh...");
             originalRequest._retry = true;
 
             try {
-                // Call the refresh endpoint using GLOBAL axios
-                // This ensures we don't trigger this interceptor again!
                 const response = await axios.post(
                     `${BASE_URL}/auth/refresh`,
                     {},
@@ -46,16 +45,18 @@ api.interceptors.response.use(
                 );
 
                 const newAccessToken = response.data.accessToken;
+                console.log("Interceptor: Refresh successful, new token obtained.");
                 setAccessToken(newAccessToken);
 
-                // Update the failed request and retry
                 if (originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 }
+                
+                console.log("Interceptor: Retrying original request...");
                 return api(originalRequest);
 
             } catch (refreshError) {
-                // Refresh also failed - session is dead
+                console.error("Interceptor: Refresh failed!", refreshError);
                 setAccessToken(null);
                 return Promise.reject(refreshError);
             }

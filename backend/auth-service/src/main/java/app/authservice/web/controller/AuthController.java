@@ -1,6 +1,5 @@
 package app.authservice.web.controller;
 
-import app.authservice.entity.User;
 import app.authservice.mapper.UserMapper;
 import app.authservice.service.AuthService;
 import app.authservice.web.dto.request.UserLoginRequestDto;
@@ -10,6 +9,7 @@ import app.authservice.web.dto.response.TokenResponseDto;
 import app.authservice.web.dto.response.UserResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
+@Slf4j
 public class AuthController {
     private final AuthService authService;
     private final UserMapper userMapper;
@@ -42,9 +43,9 @@ public class AuthController {
         ResponseCookie springCookie = ResponseCookie.from("refresh_token", tokenData.refreshToken())
                 .httpOnly(true)
                 .secure(false) // (IF IS SET TO TRUE) Ensures it's only sent over HTTPS(this might need to disable this for localhost testing)
-                .path("/api/v1/auth") // The browser will ONLY send this cookie to this endpoint, nowhere else.
+                .path("/") // Allow the cookie for any endpoint on the server
                 .maxAge(7 * 24 * 60 * 60) // 7 days in seconds
-                .sameSite("Strict") // Protects against CSRF
+                .sameSite("Lax") // Changed from Strict for cross-origin local dev
                 .build();
 
         return ResponseEntity.ok()
@@ -71,9 +72,9 @@ public class AuthController {
         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(false) // Set to false if testing locally without HTTPS
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(0) // tells the browser to delete it
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         return ResponseEntity.ok()
@@ -86,7 +87,12 @@ public class AuthController {
     public ResponseEntity<UserResponseDto> me(
             @AuthenticationPrincipal UserDetails userDetails){
 
-        // in current implementation in userdatils.getUsername() is stored the EMAIL!!
+        if (userDetails == null) {
+            log.warn("GET /me called without authentication");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        log.info("GET /me called for user: {}", userDetails.getUsername());
         return ResponseEntity.ok()
                 .body(authService.getUserProfile(userDetails.getUsername()));
     }

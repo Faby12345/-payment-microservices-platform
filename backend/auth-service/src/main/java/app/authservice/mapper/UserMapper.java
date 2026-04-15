@@ -6,7 +6,9 @@ import app.authservice.web.dto.response.UserResponseDto;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
@@ -23,11 +25,16 @@ public class UserMapper {
     }
 
     public UserResponseDto toResponse(User user){
+        Set<String> roles = user.getRoles().stream()
+                .map(role -> role.getName())
+                .collect(Collectors.toSet());
+
         return new UserResponseDto(
                 user.getId(),
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
+                roles,
                 user.getCreatedAt()
         );
     }

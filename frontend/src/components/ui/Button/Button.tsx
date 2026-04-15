@@ -30,6 +30,7 @@ export const Button: React.FC<ButtonProps> = ({
   
   const variants = {
     primary: 'bg-[var(--color-brand-accent)] hover:bg-[var(--color-brand-accent-light)] text-white shadow-glow-sm hover:shadow-glow active:scale-[0.98]',
+    secondary: 'bg-white/5 border border-white/10 hover:bg-white/10 text-white shadow-sm hover:shadow-md transition-all duration-200',
     ghost: 'bg-transparent border border-white/10 hover:bg-white/[0.06] text-white/80 hover:text-white',
     danger: 'bg-[color-mix(in_srgb,var(--color-brand-error)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-brand-error)_30%,transparent)] text-[var(--color-brand-error)] hover:bg-[color-mix(in_srgb,var(--color-brand-error)_20%,transparent)]',
   };
