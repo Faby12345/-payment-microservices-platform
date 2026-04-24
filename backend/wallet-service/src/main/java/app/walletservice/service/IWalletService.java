@@ -12,6 +12,8 @@ public interface IWalletService {
 
     Wallet createWallet(UUID userId, String defaultCurrency);
 
+    Wallet getWalletByUserId(UUID userId);
+
     Account createAccount(UUID walletId, String currency);
 
     List<Account> getAccountsByUserId(UUID userId);

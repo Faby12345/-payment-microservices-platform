@@ -27,9 +27,17 @@ public class WalletServiceImpl implements IWalletService {
         Wallet newWallet = new Wallet(userId, WalletStatus.ACTIVE);
         newWallet = walletRepository.save(newWallet);
 
+
         createAccount(newWallet.getId(), defaultCurrency);
 
+
         return newWallet;
+    }
+
+    @Override
+    public Wallet getWalletByUserId(UUID userId) {
+        return walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userId));
     }
 
     @Transactional
@@ -38,14 +46,11 @@ public class WalletServiceImpl implements IWalletService {
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + walletId));
 
-        // Simple validation for now
         if (currency == null || currency.isBlank()) {
             throw new RuntimeException("Currency is not valid!");
         }
 
         Account newAccount = new Account(currency, wallet);
-        
-
         wallet.addAccount(newAccount);
 
         return accountRepository.save(newAccount);
@@ -59,19 +64,19 @@ public class WalletServiceImpl implements IWalletService {
     @Transactional
     @Override
     public TransactionHold reserveFunds(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey) {
-
+        // Implementation to follow
         return null;
     }
 
     @Transactional
     @Override
     public void settleHold(UUID holdId) {
-
+        // Implementation to follow
     }
 
     @Transactional
     @Override
     public void releaseHold(UUID holdId) {
-
+        // Implementation to follow
     }
 }
