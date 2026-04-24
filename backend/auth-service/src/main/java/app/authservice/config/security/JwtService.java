@@ -1,4 +1,4 @@
-package app.authservice.security;
+package app.authservice.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

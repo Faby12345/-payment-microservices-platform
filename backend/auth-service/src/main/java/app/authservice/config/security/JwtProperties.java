@@ -1,4 +1,4 @@
-package app.authservice.security;
+package app.authservice.config.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

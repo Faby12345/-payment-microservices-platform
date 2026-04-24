@@ -1,9 +1,9 @@
 package app.authservice.web.controller;
 
 // Domain and Service Imports
-import app.authservice.security.JwtProperties;
-import app.authservice.security.JwtService;
-import app.authservice.security.SecurityConfig;
+import app.authservice.config.security.JwtProperties;
+import app.authservice.config.security.JwtService;
+import app.authservice.config.security.SecurityConfig;
 import app.authservice.service.AuthService;
 import app.authservice.web.dto.response.UserResponseDto;
 

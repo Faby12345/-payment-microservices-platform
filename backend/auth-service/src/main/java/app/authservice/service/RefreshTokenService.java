@@ -3,7 +3,7 @@ package app.authservice.service;
 import app.authservice.entity.RefreshToken;
 import app.authservice.entity.User;
 import app.authservice.repository.RefreshTokenRepository;
-import app.authservice.security.JwtProperties;
+import app.authservice.config.security.JwtProperties;
 import app.authservice.web.exception.TokenRefreshException;
 import app.authservice.web.exception.TokenRevokedException;
 import jakarta.transaction.Transactional;
