@@ -3,9 +3,16 @@
 // ROLE: Main dashboard showing accounts, balance, and transactions
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-
+import { 
+    getWalletData, 
+    getTransactionHistory 
+} from '../../services/walletService';
+import { 
+    type WalletResponse, 
+    type TransactionResponse 
+} from '../../types/wallet.types';
 import { 
     IconPlus, 
     IconExchange, 
@@ -17,21 +24,6 @@ import {
     IconUser
 } from '../../components/ui/Icons';
 import { cn } from '../../utils/cn';
-
-// ── Mock Data ────────────────────────────────────────────────
-
-const ACCOUNTS = [
-    { id: '1', currency: 'EUR', balance: 12540.50, flag: '🇪🇺', name: 'Euro' },
-    { id: '2', currency: 'USD', balance: 8420.00, flag: '🇺🇸', name: 'US Dollar' },
-    { id: '3', currency: 'GBP', balance: 120.00, flag: '🇬🇧', name: 'British Pound' },
-];
-
-const TRANSACTIONS = [
-    { id: 't1', title: 'Starbucks', category: 'Food & Drink', amount: -5.40, currency: 'EUR', date: 'Today', icon: '☕' },
-    { id: 't2', title: 'Salary Deposit', category: 'Income', amount: 3200.00, currency: 'EUR', date: 'Yesterday', icon: '💰' },
-    { id: 't3', title: 'Netflix', category: 'Entertainment', amount: -15.99, currency: 'EUR', date: 'Yesterday', icon: '🎬' },
-    { id: 't4', title: 'Apple Store', category: 'Shopping', amount: -129.00, currency: 'EUR', date: '2 days ago', icon: '🍎' },
-];
 
 // ── Sub-components ───────────────────────────────────────────
 
@@ -70,8 +62,35 @@ export const WalletPage: React.FC = () => {
     const { user, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('home');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    
+    // Data State
+    const [wallet, setWallet] = useState<WalletResponse | null>(null);
+    const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const totalBalance = ACCOUNTS.reduce((acc, curr) => acc + curr.balance, 0);
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            if (!user?.id) return;
+            
+            try {
+                setIsLoading(true);
+                const [walletData, txData] = await Promise.all([
+                    getWalletData(user.id),
+                    getTransactionHistory(user.id)
+                ]);
+                setWallet(walletData);
+                setTransactions(txData);
+            } catch (error) {
+                console.error("Failed to load dashboard data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [user?.id]);
+
+    const totalBalance = wallet?.accounts.reduce((acc, curr) => acc + curr.balance, 0) || 0;
 
     const navItems = [
         { id: 'home', label: 'Home', icon: <IconHome /> },
@@ -80,6 +99,14 @@ export const WalletPage: React.FC = () => {
         { id: 'stats', label: 'Stats', icon: <IconChartBar /> },
         { id: 'hub', label: 'Hub', icon: <IconGrid /> },
     ];
+
+    if (isLoading && !wallet) {
+        return (
+            <div className="min-h-screen bg-[var(--color-brand-bg)] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-brand-accent)]"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[var(--color-brand-bg)] text-white flex overflow-hidden">
@@ -159,7 +186,10 @@ export const WalletPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-full hover:bg-white/5 transition-colors text-[var(--color-brand-secondary)] md:hidden">
+                        <button 
+                            onClick={logout}
+                            className="p-2 rounded-full hover:bg-white/5 transition-colors text-[var(--color-brand-secondary)] md:hidden"
+                        >
                             <IconUser />
                         </button>
                     </div>
@@ -183,7 +213,7 @@ export const WalletPage: React.FC = () => {
                         <QuickAction icon={<IconSend />} label="Send" />
                     </section>
 
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="grid lg:grid-cols-2 gap-8">
                         {/* Accounts */}
                         <section className="space-y-4">
                             <div className="flex items-center justify-between">
@@ -191,22 +221,28 @@ export const WalletPage: React.FC = () => {
                                 <button className="text-[var(--color-brand-accent)] text-sm font-medium">See all</button>
                             </div>
                             <div className="space-y-3">
-                                {ACCOUNTS.map(account => (
+                                {wallet?.accounts.map(account => (
                                     <div key={account.id} className="glass-card p-4 rounded-2xl flex items-center justify-between group cursor-pointer hover:bg-white/5 transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className="text-2xl w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10">
-                                                {account.flag}
+                                                {account.currency === 'EUR' ? '🇪🇺' : account.currency === 'USD' ? '🇺🇸' : '🇬🇧'}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="font-semibold">{account.name}</span>
+                                                <span className="font-semibold">{account.currency === 'EUR' ? 'Euro' : account.currency === 'USD' ? 'US Dollar' : 'British Pound'}</span>
                                                 <span className="text-xs text-[var(--color-brand-secondary)] uppercase">{account.currency}</span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-bold">{account.currency === 'EUR' ? '€' : account.currency === 'USD' ? '$' : '£'}{account.balance.toLocaleString()}</div>
+                                            <div className="font-bold">
+                                                {account.currency === 'EUR' ? '€' : account.currency === 'USD' ? '$' : '£'}
+                                                {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
+                                {wallet?.accounts.length === 0 && (
+                                    <p className="text-[var(--color-brand-secondary)] text-sm italic py-4 text-center">No accounts found.</p>
+                                )}
                             </div>
                         </section>
 
@@ -217,25 +253,30 @@ export const WalletPage: React.FC = () => {
                                 <button className="text-[var(--color-brand-accent)] text-sm font-medium">View all</button>
                             </div>
                             <div className="space-y-1">
-                                {TRANSACTIONS.map(tx => (
+                                {transactions.map(tx => (
                                     <div key={tx.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-white/5 transition-colors cursor-pointer group">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-xl group-hover:scale-110 transition-transform border border-white/5">
-                                                {tx.icon}
+                                                {tx.type === 'DEPOSIT' ? '💰' : tx.type === 'WITHDRAWAL' ? '☕' : tx.type === 'EXCHANGE' ? '💱' : '💸'}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="font-semibold text-sm">{tx.title}</span>
-                                                <span className="text-xs text-[var(--color-brand-secondary)]">{tx.category} • {tx.date}</span>
+                                                <span className="font-semibold text-sm">{tx.description || tx.type}</span>
+                                                <span className="text-xs text-[var(--color-brand-secondary)]">
+                                                    {tx.type} • {new Date(tx.createdAt).toLocaleDateString()}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className={cn(
                                             "font-bold text-sm",
-                                            tx.amount > 0 ? "text-[var(--color-brand-success)]" : "text-white"
+                                            tx.type === 'DEPOSIT' ? "text-[var(--color-brand-success)]" : "text-white"
                                         )}>
-                                            {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)} {tx.currency}
+                                            {tx.type === 'DEPOSIT' ? '+' : '-'}{tx.destinationAmount.toFixed(2)} {tx.destinationCurrency}
                                         </div>
                                     </div>
                                 ))}
+                                {transactions.length === 0 && (
+                                    <p className="text-[var(--color-brand-secondary)] text-sm italic py-4 text-center">No transactions yet.</p>
+                                )}
                             </div>
                         </section>
                     </div>

@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 // STATIC IMPORTS
@@ -50,7 +51,7 @@ public class AuthServiceTest {
         when(roleService.findRoleByName("USER")).thenReturn(userRole);
         when(userMapper.toEntity(any(), any())).thenReturn(userEntity);
         when(userRepository.save(any())).thenReturn(savedUser);
-        when(userMapper.toResponse(any())).thenReturn(new UserResponseDto(savedUser.getId(), "John", "Doe", "john@example.com", Instant.now()));
+        when(userMapper.toResponse(any())).thenReturn(new UserResponseDto(savedUser.getId(), "john@example.com", "John", "Doe", Set.of("USER"), Instant.now()));
 
         //  (Execute)
         UserResponseDto result = authService.register(dto);
