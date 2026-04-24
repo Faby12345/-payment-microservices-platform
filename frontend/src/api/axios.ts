@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const BASE_URL = 'http://localhost:8080/api/v1';
+// To test on your phone: Replace 'localhost' with your machine's IP (e.g., '192.168.1.XX')
+const BASE_URL = `http://${window.location.hostname}:8080/api/v1`;
 
 export const api = axios.create({
 

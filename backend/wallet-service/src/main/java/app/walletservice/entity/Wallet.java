@@ -5,11 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +16,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "wallet")
-public class Wallet extends BaseEntity{
+public class Wallet extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, unique = true)
@@ -33,6 +31,19 @@ public class Wallet extends BaseEntity{
     private WalletStatus status;
 
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Account> accounts;
+    private List<Account> accounts = new ArrayList<>();
 
+    public Wallet(UUID userId, WalletStatus status) {
+        this.userId = userId;
+        this.status = status;
+        this.accounts = new ArrayList<>();
+    }
+
+    public void addAccount(Account account) {
+        if (accounts == null) {
+            accounts = new ArrayList<>();
+        }
+        accounts.add(account);
+        account.setWallet(this);
+    }
 }

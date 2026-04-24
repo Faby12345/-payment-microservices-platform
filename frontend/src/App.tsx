@@ -4,12 +4,11 @@
 
 
 import { AuthPage } from './pages/AuthPage';
+import { WalletPage } from './pages/WalletPage';
 import { useAuth } from './hooks/useAuth';
-import { Button } from './components/ui/Button';
-import {useEffect} from "react";
 
 function App() {
-  const { user, logout, isInitializing } = useAuth();
+  const { user, isInitializing } = useAuth();
 
   if (isInitializing) {
     return (
@@ -22,26 +21,7 @@ function App() {
   }
 
   if (user) {
-    return (
-      <main className="min-h-screen bg-[var(--color-brand-bg)] flex flex-col items-center justify-center p-4">
-        <div className="glass-card p-8 rounded-2xl max-w-md w-full text-center space-y-6 animate-fade-in">
-          <div className="w-20 h-20 bg-[var(--color-brand-accent)]/10 rounded-full flex items-center justify-center mx-auto mb-2 border border-[var(--color-brand-accent)]/20">
-            <span className="text-3xl text-[var(--color-brand-accent)] font-bold">
-              {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-            </span>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Welcome back, {user.firstName}!</h1>
-            <p className="text-[var(--color-brand-secondary)]">{user.email}</p>
-          </div>
-          <div className="pt-4">
-            <Button onClick={logout} variant="secondary" fullWidth>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </main>
-    );
+    return <WalletPage />;
   }
 
   return (

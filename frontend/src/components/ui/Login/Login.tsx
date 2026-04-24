@@ -35,7 +35,6 @@ export const Login: React.FC<LoginProps> = ({ onToggleMode }) => {
     if (loginForm.validateAll()) {
       try {
         await login(loginForm.values);
-        alert('Logged in successfully!');
       } catch { /* error surfaced via authError */ }
     }
   };
