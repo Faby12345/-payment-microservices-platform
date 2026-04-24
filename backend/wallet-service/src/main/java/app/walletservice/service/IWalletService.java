@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface IWalletService {
 
-    Wallet createWallet(UUID userId);
+    Wallet createWallet(UUID userId, String defaultCurrency);
 
     Account createAccount(UUID walletId, String currency);
 
