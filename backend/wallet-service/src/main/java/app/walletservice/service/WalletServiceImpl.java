@@ -4,6 +4,7 @@ import app.walletservice.entity.*;
 import app.walletservice.repository.AccountRepository;
 import app.walletservice.repository.TransactionHoldRepository;
 import app.walletservice.repository.WalletRepository;
+import app.walletservice.service.interfaces.IWalletService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

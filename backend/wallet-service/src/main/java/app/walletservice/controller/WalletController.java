@@ -4,7 +4,7 @@ import app.walletservice.dto.CreateWalletRequest;
 import app.walletservice.dto.WalletResponse;
 import app.walletservice.entity.Wallet;
 import app.walletservice.mapper.WalletMapper;
-import app.walletservice.service.IWalletService;
+import app.walletservice.service.interfaces.IWalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

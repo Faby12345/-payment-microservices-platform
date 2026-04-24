@@ -1,4 +1,4 @@
-package app.walletservice.service;
+package app.walletservice.service.interfaces;
 
 import app.walletservice.entity.Account;
 import app.walletservice.entity.TransactionHold;
