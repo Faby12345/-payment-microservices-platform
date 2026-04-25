@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface TransactionHoldRepository extends JpaRepository<TransactionHold, UUID> {
     Optional<TransactionHold> findByIdempotencyKey(String idempotencyKey);
     Optional<TransactionHold> findByReference(String reference);
+
+    boolean existsByIdempotencyKey(String idempotencyKey);
 }

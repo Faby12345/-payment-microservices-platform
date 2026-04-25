@@ -16,6 +16,17 @@ import java.util.UUID;
 @Table(name = "transaction_holds")
 public class TransactionHold extends BaseEntity {
 
+    public TransactionHold(Account account, BigDecimal amount,
+                           String currency, TransactionHoldStatus status,
+                           String reference, String idempotencyKey) {
+        this.account = account;
+        this.amount = amount;
+        this.currency = currency;
+        this.status = status;
+        this.reference = reference;
+        this.idempotencyKey = idempotencyKey;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

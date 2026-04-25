@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
+import java.util.UUID;
+import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/api/v1/wallets")
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class WalletController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<WalletResponse> getWallet(@org.springframework.web.bind.annotation.PathVariable java.util.UUID userId) {
+    public ResponseEntity<WalletResponse> getWallet(@PathVariable UUID userId) {
         Wallet wallet = walletService.getWalletByUserId(userId);
         return ResponseEntity.ok(walletMapper.toResponse(wallet));
     }

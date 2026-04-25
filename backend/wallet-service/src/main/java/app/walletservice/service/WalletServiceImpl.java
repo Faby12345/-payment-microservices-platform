@@ -3,6 +3,7 @@ package app.walletservice.service;
 import app.walletservice.entity.*;
 import app.walletservice.repository.AccountRepository;
 import app.walletservice.repository.TransactionHoldRepository;
+import app.walletservice.repository.TransactionRepository;
 import app.walletservice.repository.WalletRepository;
 import app.walletservice.service.interfaces.IWalletService;
 import jakarta.transaction.Transactional;
@@ -20,6 +21,7 @@ public class WalletServiceImpl implements IWalletService {
     private final WalletRepository walletRepository;
     private final AccountRepository accountRepository;
     private final TransactionHoldRepository transactionHoldRepository;
+    private final TransactionRepository transactionRepository;
 
     @Transactional
     @Override
@@ -64,20 +66,96 @@ public class WalletServiceImpl implements IWalletService {
 
     @Transactional
     @Override
-    public TransactionHold reserveFunds(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey) {
-        // Implementation to follow
-        return null;
+    public TransactionHold reserveFunds(UUID accountId, BigDecimal amount,
+                                        String currency, String reference,
+                                        String idempotencyKey) {
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("account not found!"));
+
+        if(transactionHoldRepository.existsByIdempotencyKey(idempotencyKey)){
+            throw new RuntimeException("Transaction amount is already hold!");
+        }
+
+        if (!account.getCurrency().equals(currency)) {
+            throw new RuntimeException("Currency mismatch!");
+        }
+
+        if(amount.compareTo(BigDecimal.ZERO) <= 0){
+            throw new RuntimeException("Amount should be grated than 0!");
+        }
+
+        if(account.getAvailableBalance().compareTo(amount) < 0){
+            throw new RuntimeException("The amount requested is grater then available balance!");
+        }
+
+
+        account.setAvailableBalance(account.getAvailableBalance().subtract(amount));
+        accountRepository.save(account);
+
+
+        TransactionHold newTransactionHold = new TransactionHold(
+                account,
+                amount,
+                currency,
+                TransactionHoldStatus.HELD,
+                reference,
+                idempotencyKey);
+
+        return transactionHoldRepository.save(newTransactionHold);
+
+
     }
 
     @Transactional
     @Override
     public void settleHold(UUID holdId) {
-        // Implementation to follow
+        TransactionHold transactionHold = transactionHoldRepository.findById(holdId)
+                .orElseThrow(() -> new RuntimeException("Transaction hold dosen t exists!"));
+
+        if(transactionHold.getStatus() != TransactionHoldStatus.HELD){
+            throw new RuntimeException("Hold cannot be settled because it is " + transactionHold.getStatus());
+        }
+
+        Account account = transactionHold.getAccount();
+
+        account.setBalance(account.getBalance().subtract(transactionHold.getAmount()));
+        accountRepository.save(account);
+
+        transactionHold.setStatus(TransactionHoldStatus.SETTLED);
+        transactionHoldRepository.save(transactionHold);
+
+
+             Transaction transaction = Transaction.builder()
+                    .fromAccount(account)
+                    .type(TransactionType.TRANSFER)
+                    .status(TransactionStatus.COMPLETED)
+                   .sourceAmount(transactionHold.getAmount())
+                    .sourceCurrency(transactionHold.getCurrency())
+                    .reference(transactionHold.getReference())
+                    .idempotencyKey(transactionHold.getIdempotencyKey())
+                   .build();
+
+        transactionRepository.save(transaction);
     }
 
     @Transactional
     @Override
     public void releaseHold(UUID holdId) {
-        // Implementation to follow
+        TransactionHold transactionHold = transactionHoldRepository.findById(holdId)
+                .orElseThrow(() -> new RuntimeException("Transaction hold dosen t exists!"));
+
+        if(transactionHold.getStatus() != TransactionHoldStatus.HELD){
+            throw new RuntimeException("Hold cannot be released because it is " + transactionHold.getStatus());
+        }
+
+        Account account = transactionHold.getAccount();
+
+        account.setAvailableBalance(account.getAvailableBalance().add(transactionHold.getAmount()));
+        accountRepository.save(account);
+
+
+        transactionHold.setStatus(TransactionHoldStatus.RELEASED);
+        transactionHoldRepository.save(transactionHold);
     }
 }
