@@ -25,6 +25,7 @@ public class TransactionHold extends BaseEntity {
         this.status = status;
         this.reference = reference;
         this.idempotencyKey = idempotencyKey;
+        this.expiresAt = LocalDateTime.now().plusHours(24);
     }
 
     @Id

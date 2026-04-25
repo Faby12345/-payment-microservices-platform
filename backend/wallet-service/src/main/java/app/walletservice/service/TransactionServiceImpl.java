@@ -45,12 +45,12 @@ public class TransactionServiceImpl implements ITransactionService {
             //  Settle the hold (Takes money from Sender)
             walletService.settleHold(hold.getId());
 
-            //  Credit the Receiver (Gives money to Receiver)
+            // 3. Credit the Receiver (Gives money to Receiver)
             walletService.creditAccount(
                     request.toAccountId(),
                     request.amount(),
                     request.currency(),
-                    request.reference(),
+                    request.reference() + "_credit",
                     request.idempotencyKey() + "_credit"
             );
 
