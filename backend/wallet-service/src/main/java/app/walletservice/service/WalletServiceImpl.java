@@ -158,4 +158,41 @@ public class WalletServiceImpl implements IWalletService {
         transactionHold.setStatus(TransactionHoldStatus.RELEASED);
         transactionHoldRepository.save(transactionHold);
     }
+
+    @Transactional
+    @Override
+    public void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey) {
+        if (transactionRepository.findByIdempotencyKey(idempotencyKey).isPresent()) {
+            return; //  already processed
+        }
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found!"));
+
+        if (!account.getCurrency().equals(currency)) {
+            throw new RuntimeException("Currency mismatch!");
+        }
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Amount must be greater than zero!");
+        }
+
+
+        account.setBalance(account.getBalance().add(amount));
+        account.setAvailableBalance(account.getAvailableBalance().add(amount));
+        accountRepository.save(account);
+
+
+        Transaction transaction = Transaction.builder()
+                .toAccount(account)
+                .type(TransactionType.DEPOSIT)
+                .status(TransactionStatus.COMPLETED)
+                .destinationAmount(amount)
+                .destinationCurrency(currency)
+                .reference(reference)
+                .idempotencyKey(idempotencyKey)
+                .build();
+
+        transactionRepository.save(transaction);
+    }
 }

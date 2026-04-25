@@ -23,4 +23,6 @@ public interface IWalletService {
     void settleHold(UUID holdId);
 
     void releaseHold(UUID holdId);
+
+    void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey);
 }
