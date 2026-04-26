@@ -11,12 +11,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class WalletServiceImpl implements IWalletService {
+
+    private static final SecureRandom random = new SecureRandom();
 
     private final WalletRepository walletRepository;
     private final AccountRepository accountRepository;
@@ -54,9 +57,20 @@ public class WalletServiceImpl implements IWalletService {
         }
 
         Account newAccount = new Account(currency, wallet);
+        newAccount.setIban(generateIban());
         wallet.addAccount(newAccount);
 
         return accountRepository.save(newAccount);
+    }
+
+    private String generateIban() {
+        // Simplified Platform IBAN format:
+        // DE (Country) + 99 (Check) + PAYM (Bank) + 10 random digits
+        StringBuilder sb = new StringBuilder("DE99PAYM");
+        for (int i = 0; i < 10; i++) {
+            sb.append(random.nextInt(10));
+        }
+        return sb.toString();
     }
 
     @Override

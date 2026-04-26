@@ -9,10 +9,11 @@ VALUES (
 ) ON CONFLICT (user_id) DO NOTHING;
 
 -- 2. Create a EUR Account for this wallet
-INSERT INTO account (id, wallet_id, currency, balance, available_balance, version, created_at, updated_at)
+INSERT INTO account (id, wallet_id, iban, currency, balance, available_balance, version, created_at, updated_at)
 VALUES (
     'f1e2d3c4-b5a6-9a8b-7c6d-5e4f3a2b1c0d', 
     (SELECT id FROM wallet WHERE user_id = 'd55453b7-35b8-463d-852e-14e2ca28847a'),
+    'PT500001000112345678901',
     'EUR', 
     4694.60, 
     4694.60, 
