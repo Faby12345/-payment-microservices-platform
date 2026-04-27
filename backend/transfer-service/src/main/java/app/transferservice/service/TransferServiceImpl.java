@@ -1,5 +1,6 @@
 package app.transferservice.service;
 
+import app.transferservice.config.TransferProperties;
 import app.transferservice.dto.TransferRequest;
 import app.transferservice.dto.TransferResponse;
 import app.transferservice.event.TransferCreatedEvent;
@@ -23,20 +24,19 @@ import java.time.LocalDateTime;
 public class TransferServiceImpl implements TransferService {
     private final TransferRepository transferRepository;
     private final TransferProducer transferProducer;
+    private final TransferProperties transferProperties;
 
     @Override
     @Transactional
     public TransferResponse initiateTransfer(TransferRequest request) {
         log.info("Initiating transfer request: {}", request);
 
-
         BigDecimal feePercent = (request.type() == TransferType.EXTERNAL) 
-                ? new BigDecimal("0.025") // 2.5% for IBAN
-                : new BigDecimal("0.01");  // 1.0% for Friends
+                ? transferProperties.getExternal() 
+                : transferProperties.getInternal();
 
         BigDecimal fee = request.amount().multiply(feePercent);
         BigDecimal total = request.amount().add(fee);
-
 
         Transfer transfer = Transfer.builder()
                 .fromAccountId(request.fromAccountId())
@@ -54,7 +54,6 @@ public class TransferServiceImpl implements TransferService {
 
         Transfer savedTransfer = transferRepository.save(transfer);
 
-
         TransferCreatedEvent event = new TransferCreatedEvent(
                 savedTransfer.getId(),
                 savedTransfer.getFromAccountId(),
@@ -65,7 +64,6 @@ public class TransferServiceImpl implements TransferService {
         );
 
         transferProducer.sendTransferCreatedEvent(event);
-
 
         return TransferResponse.builder()
                 .transactionId(savedTransfer.getId())
