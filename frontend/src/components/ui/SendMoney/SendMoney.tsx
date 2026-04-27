@@ -37,8 +37,28 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
     const total = amount ? (parseFloat(amount) + parseFloat(fee)).toFixed(2) : '0.00';
     const deliveryTime = isIban ? '1-2 Business Days' : 'Instant';
 
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // This is where you would call your API service
+        const formData = {
+            mode,
+            fromAccountId: selectedAccount,
+            amount: parseFloat(amount),
+            recipient: mode === 'friend' ? recipient : { recipientName, iban, bic },
+            fee,
+            total
+        };
+
+        console.log("Form Submitted Successfully:", formData);
+        alert(`Transfer of ${amount} ${currentAccount?.currency} to ${mode === 'friend' ? recipient : recipientName} initiated!`);
+        onClose();
+    };
+
+
     return (
-        <div className="animate-slide-up w-full">
+        <form onSubmit={handleSubmit} className="animate-slide-up w-full">
             <div className="glass-card rounded-[var(--radius-card)] p-8 shadow-glow-sm relative overflow-hidden">
                 {/* Background Decoration */}
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[var(--color-brand-accent)]/5 rounded-full blur-3xl pointer-events-none" />
@@ -51,6 +71,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                         </p>
                     </div>
                     <button 
+                        type="button"
                         onClick={onClose}
                         className="p-2 hover:bg-white/5 rounded-full transition-colors text-[var(--color-brand-secondary)]"
                     >
@@ -63,6 +84,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                 {/* Mode Selector */}
                 <div className="flex p-1 bg-white/5 rounded-2xl mb-8 border border-white/5">
                     <button 
+                        type="button"
                         onClick={() => setMode('friend')}
                         className={cn(
                             "flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
@@ -73,6 +95,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                         To Friend
                     </button>
                     <button 
+                        type="button"
                         onClick={() => setMode('iban')}
                         className={cn(
                             "flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
@@ -93,6 +116,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                         {accounts.map((acc) => (
                             <button
                                 key={acc.id}
+                                type="button"
                                 onClick={() => setSelectedAccount(acc.id)}
                                 className={cn(
                                     "p-4 rounded-xl border text-left transition-all duration-300 relative overflow-hidden group",
@@ -123,7 +147,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                         <div className="space-y-6">
                             {/* Recent Recipients */}
                             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                                <button className="flex-shrink-0 flex flex-col items-center gap-2 group">
+                                <button type="button" className="flex-shrink-0 flex flex-col items-center gap-2 group">
                                     <div className="w-12 h-12 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group-hover:border-[var(--color-brand-accent)] group-hover:text-[var(--color-brand-accent)] transition-all">
                                         <IconPlus className="w-5 h-5" />
                                     </div>
@@ -132,6 +156,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                                 {recentRecipients.map((r) => (
                                     <button 
                                         key={r.id} 
+                                        type="button"
                                         onClick={() => setRecipient(r.name)}
                                         className="flex-shrink-0 flex flex-col items-center gap-2 group"
                                     >
@@ -222,6 +247,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                             )}
                         />
                         <button 
+                            type="button"
                             className="absolute right-4 top-1/2 -translate-y-1/2 px-3 py-1 rounded-md bg-[var(--color-brand-accent)]/20 text-[var(--color-brand-accent)] text-xs font-bold hover:bg-[var(--color-brand-accent)] hover:text-white transition-all"
                             onClick={() => setAmount(currentAccount?.balance.toString() || '0')}
                         >
@@ -265,6 +291,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
 
                 {/* 5. Action Button */}
                 <button 
+                    type="submit"
                     disabled={!amount || isOverBalance || (mode === 'friend' ? !recipient : !iban || !recipientName)}
                     className={cn(
                         "w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-glow",
@@ -277,6 +304,6 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                     Confirm & Send
                 </button>
             </div>
-        </div>
+        </form>
     );
 };

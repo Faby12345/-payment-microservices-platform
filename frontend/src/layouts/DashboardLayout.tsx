@@ -148,7 +148,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet }) => {
                     </div>
                 </header>
 
-                <section className="sticky top-[73px] z-20 bg-[var(--color-brand-bg)]/90 backdrop-blur-md border-b border-white/5 py-3">
+                <section className="bg-[var(--color-brand-bg)] border-b border-white/5 py-3">
                     <div className="flex gap-4 overflow-x-auto no-scrollbar px-6 max-w-5xl mx-auto">
                         {wallet?.accounts.map(account => (
                             <button key={account.id} 
