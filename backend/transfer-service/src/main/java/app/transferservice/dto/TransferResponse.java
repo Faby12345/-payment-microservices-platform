@@ -1,5 +1,6 @@
 package app.transferservice.dto;
 
+import app.transferservice.model.enums.TransactionStatus;
 import lombok.Builder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,8 +17,4 @@ public record TransferResponse(
     LocalDateTime timestamp,
     String message,
     String estimatedDelivery
-) {
-    public enum TransactionStatus {
-        PENDING, COMPLETED, FAILED
-    }
-}
+) {}

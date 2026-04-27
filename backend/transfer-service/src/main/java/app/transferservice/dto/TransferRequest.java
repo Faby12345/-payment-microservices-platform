@@ -1,5 +1,6 @@
 package app.transferservice.dto;
 
+import app.transferservice.model.enums.TransferType;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import java.math.BigDecimal;
@@ -30,8 +31,4 @@ public record TransferRequest(
     String bic,
     
     String description
-) {
-    public enum TransferType {
-        INTERNAL, EXTERNAL
-    }
-}
+) {}
