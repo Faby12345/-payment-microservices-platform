@@ -33,9 +33,7 @@ public class WalletServiceImpl implements IWalletService {
         Wallet newWallet = new Wallet(userId, WalletStatus.ACTIVE);
         newWallet = walletRepository.save(newWallet);
 
-
         createAccount(newWallet.getId(), defaultCurrency);
-
 
         return newWallet;
     }
@@ -66,7 +64,7 @@ public class WalletServiceImpl implements IWalletService {
     private String generateIban() {
         // Simplified Platform IBAN format:
         // DE (Country) + 99 (Check) + PAYM (Bank) + 10 random digits
-        StringBuilder sb = new StringBuilder("DE99PAYM");
+        StringBuilder sb = new StringBuilder("RO99PAYM");
         for (int i = 0; i < 10; i++) {
             sb.append(random.nextInt(10));
         }

@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class JpaConfig {
 
     // This is a "Marker" config class.
-    // It keeps the JPA Auditing engine away from  Web Tests.
+    // It keeps the JPA Auditing engine away from Web Tests.
 }
