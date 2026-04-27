@@ -29,6 +29,19 @@ services:
     volumes:
       - wallet_db_data:/var/lib/postgresql/data
 
+  transfer-db:
+    image: postgres:16-alpine
+    container_name: transfer-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: transfer_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"
+    volumes:
+      - transfer_db_data:/var/lib/postgresql/data
+
   # --- OPTIONAL: Services (Uncomment to run in Docker) ---
   # Note: Running Java in Docker is heavier on RAM than running directly on Mac
   
@@ -44,3 +57,4 @@ services:
 volumes:
   auth_db_data:
   wallet_db_data:
+  transfer_db_data:
