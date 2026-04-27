@@ -42,6 +42,18 @@ services:
     volumes:
       - transfer_db_data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI port
+
+
   # --- OPTIONAL: Services (Uncomment to run in Docker) ---
   # Note: Running Java in Docker is heavier on RAM than running directly on Mac
   
