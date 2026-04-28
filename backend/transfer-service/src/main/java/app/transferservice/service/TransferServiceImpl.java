@@ -60,7 +60,8 @@ public class TransferServiceImpl implements TransferService {
                 savedTransfer.getAmount(),
                 savedTransfer.getCurrency(),
                 savedTransfer.getType(),
-                savedTransfer.getRecipientIdentifier()
+                savedTransfer.getRecipientIdentifier(),
+                savedTransfer.getDescription()
         );
 
         transferProducer.sendTransferCreatedEvent(event);

@@ -15,8 +15,8 @@ import {walletApi} from "../api/axios.ts";
     return data;
  }
 
- export const initateTransfer = async (transferData: any) => {
-     try {
-         const response = await walletApi.post<transferData>()
-     }
- }
+ // export const initateTransfer = async (transferData: any) => {
+ //     try {
+ //         //const response = await walletApi.post<transferData>()
+ //     }
+ // }

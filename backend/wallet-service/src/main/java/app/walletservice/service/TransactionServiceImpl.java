@@ -2,8 +2,12 @@ package app.walletservice.service;
 
 import app.walletservice.dto.TransactionResponse;
 import app.walletservice.dto.TransferRequest;
+import app.walletservice.entity.Account;
 import app.walletservice.entity.TransactionHold;
+import app.walletservice.event.TransferCreatedEvent;
+import app.walletservice.event.TransferType;
 import app.walletservice.mapper.TransactionMapper;
+import app.walletservice.repository.AccountRepository;
 import app.walletservice.repository.TransactionRepository;
 import app.walletservice.service.interfaces.ITransactionService;
 import app.walletservice.service.interfaces.IWalletService;
@@ -21,6 +25,7 @@ public class TransactionServiceImpl implements ITransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final IWalletService walletService;
+    private final AccountRepository accountRepository;
 
     @Override
     public List<TransactionResponse> getTransactionsByUserId(UUID userId) {
@@ -59,5 +64,51 @@ public class TransactionServiceImpl implements ITransactionService {
             walletService.releaseHold(hold.getId());
             throw new RuntimeException("Transfer failed: " + e.getMessage());
         }
+    }
+
+    @Override
+    @Transactional
+    public void processTransferFromEvent(TransferCreatedEvent event) {
+
+        ///  MAKE A TRANSACTION HOLD
+        TransactionHold hold = walletService.reserveFunds(
+                event.fromAccountId(),
+                event.amount(),
+                event.currency(),
+                event.description(),
+                event.transferId().toString()
+        );
+
+        try {
+            //  Settle the hold (Takes money from Sender)
+            walletService.settleHold(hold.getId());
+
+            if(event.type() == TransferType.INTERNAL){
+                Account toAccount = accountRepository
+                        .findByIban(event.recipientIdentifier())
+                        .orElseThrow(() -> new RuntimeException("Account dont found!"));
+
+                walletService.creditAccount(
+                        toAccount.getId(),
+                        event.amount(),
+                        event.currency(),
+                        event.description() + "_credit",
+                        event.transferId() + "_credit"
+                );
+            } else {
+                ///  if the account is to another bank
+                return;
+            }
+
+        }  catch (Exception e) {
+            //If anything fails after reservation, release the funds
+            walletService.releaseHold(hold.getId());
+            throw new RuntimeException("Transfer failed: " + e.getMessage());
+        }
+
+
+
+
+
     }
 }

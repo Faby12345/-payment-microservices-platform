@@ -9,5 +9,6 @@ public record TransferCreatedEvent(
     BigDecimal amount,
     String currency,
     TransferType type,
-    String recipientIdentifier
+    String recipientIdentifier,
+    String description
 ) {}

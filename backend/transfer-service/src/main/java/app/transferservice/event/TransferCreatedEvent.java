@@ -13,5 +13,6 @@ public record TransferCreatedEvent(
     BigDecimal amount,
     String currency,
     TransferType type,
-    String recipientIdentifier // Used for internal transfers
+    String recipientIdentifier,
+    String description
 ) {}

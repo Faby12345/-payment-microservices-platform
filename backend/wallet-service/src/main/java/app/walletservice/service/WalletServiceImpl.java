@@ -217,11 +217,5 @@ public class WalletServiceImpl implements IWalletService {
         transactionRepository.save(transaction);
     }
 
-    @Override
-    @RabbitListener(queues = RabbitMQConfig.WALLET_TRANSFER_QUEUE)
-    public void processTransfer(TransferCreatedEvent event){
-        log.info("Procesing transfer (consumer): {}", event);
-        System.out.println(event.toString());
 
-    }
 }

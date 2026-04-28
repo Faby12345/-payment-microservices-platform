@@ -27,5 +27,4 @@ public interface IWalletService {
 
     void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey);
 
-    void processTransfer(TransferCreatedEvent event);
 }
