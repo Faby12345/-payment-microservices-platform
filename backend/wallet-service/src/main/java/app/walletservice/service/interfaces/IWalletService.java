@@ -3,6 +3,7 @@ package app.walletservice.service.interfaces;
 import app.walletservice.entity.Account;
 import app.walletservice.entity.TransactionHold;
 import app.walletservice.entity.Wallet;
+import app.walletservice.event.TransferCreatedEvent;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,4 +26,6 @@ public interface IWalletService {
     void releaseHold(UUID holdId);
 
     void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey);
+
+    void processTransfer(TransferCreatedEvent event);
 }

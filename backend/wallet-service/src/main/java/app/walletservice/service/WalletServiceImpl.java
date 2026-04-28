@@ -1,6 +1,8 @@
 package app.walletservice.service;
 
+import app.walletservice.config.RabbitMQConfig;
 import app.walletservice.entity.*;
+import app.walletservice.event.TransferCreatedEvent;
 import app.walletservice.repository.AccountRepository;
 import app.walletservice.repository.TransactionHoldRepository;
 import app.walletservice.repository.TransactionRepository;
@@ -8,6 +10,8 @@ import app.walletservice.repository.WalletRepository;
 import app.walletservice.service.interfaces.IWalletService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class WalletServiceImpl implements IWalletService {
 
     private static final SecureRandom random = new SecureRandom();
@@ -210,5 +215,13 @@ public class WalletServiceImpl implements IWalletService {
                 .build();
 
         transactionRepository.save(transaction);
+    }
+
+    @Override
+    @RabbitListener(queues = RabbitMQConfig.WALLET_TRANSFER_QUEUE)
+    public void processTransfer(TransferCreatedEvent event){
+        log.info("Procesing transfer (consumer): {}", event);
+        System.out.println(event.toString());
+
     }
 }
