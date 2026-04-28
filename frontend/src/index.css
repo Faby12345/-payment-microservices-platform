@@ -100,6 +100,18 @@
     border-color: var(--color-brand-accent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-accent) 20%, transparent);
   }
+
+  /* Hide spinners for Chrome, Safari, Edge, Opera */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Hide spinners for Firefox */
+  &[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 @utility gradient-text {

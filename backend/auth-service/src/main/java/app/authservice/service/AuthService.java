@@ -39,9 +39,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
 
-
-
-
     @Transactional
     public UserResponseDto register(UserRegisterRequestDto dto){
         log.info("Attempting to register new user with email: {}", dto.email());
@@ -95,8 +92,7 @@ public class AuthService {
          * and stop execution if the user / passwrod is wrong
          * it compers the passwrod hashes. etc (all the logic)
          * */
-        Authentication authenticationResponse =
-                this.authenticationManager.authenticate(authenticationRequest);
+        Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
 
         // ( .orElseThrow() just in case, though the auth manager already proved they exist).
         User user = userRepository.findByEmail(dto.email())

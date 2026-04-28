@@ -29,6 +29,9 @@ public class Account extends BaseEntity{
     @Column(name = "id", nullable = false, unique = true)
     private UUID id;
 
+    @Column(name = "iban", nullable = false, unique = true, length = 34)
+    private String iban;
+
     @Column(name = "currency", nullable = false)
     private String currency;
 
