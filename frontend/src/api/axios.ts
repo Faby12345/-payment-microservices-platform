@@ -9,7 +9,7 @@ const getBaseUrl = (envUrl: string) => {
 
 const AUTH_BASE_URL = getBaseUrl(import.meta.env.VITE_AUTH_API_BASE_URL);
 const WALLET_BASE_URL = getBaseUrl(import.meta.env.VITE_WALLET_API_BASE_URL);
-
+const TRANSFER_BASE_URL = getBaseUrl(import.meta.env.VITE_TRANSFER_API_BASE_URL || 'http://localhost:8082');
 // Token storage (Internal to this module)
 let accessToken: string | null = null;
 
@@ -77,7 +77,7 @@ const createServiceInstance = (baseURL: string): AxiosInstance => {
 //  Export specific instances for your services
 export const authApi = createServiceInstance(AUTH_BASE_URL);
 export const walletApi = createServiceInstance(WALLET_BASE_URL);
-
+export const transferApi = createServiceInstance(TRANSFER_BASE_URL);
 /**
  * Compatibility Export
  * Keeps existing code working by aliasing authApi as 'api'

@@ -14,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class AccountResponse {
     private UUID id;
+    private String iban;
     private String currency;
     private BigDecimal balance;
     private BigDecimal availableBalance;

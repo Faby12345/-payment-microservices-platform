@@ -3,6 +3,7 @@ package app.walletservice.service.interfaces;
 import app.walletservice.entity.Account;
 import app.walletservice.entity.TransactionHold;
 import app.walletservice.entity.Wallet;
+import app.walletservice.event.TransferCreatedEvent;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,11 +19,14 @@ public interface IWalletService {
 
     List<Account> getAccountsByUserId(UUID userId);
 
-    TransactionHold reserveFunds(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey);
+    Account getAccountById(UUID accountId);
+
+    TransactionHold reserveFunds(UUID accountId, BigDecimal amount, String currency, String reference, String description, String idempotencyKey);
 
     void settleHold(UUID holdId);
 
     void releaseHold(UUID holdId);
 
-    void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey);
+    void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String description, String idempotencyKey);
+
 }

@@ -29,6 +29,7 @@ public class WalletMapper {
 
         return AccountResponse.builder()
                 .id(account.getId())
+                .iban(account.getIban())
                 .currency(account.getCurrency())
                 .balance(account.getBalance())
                 .availableBalance(account.getAvailableBalance())

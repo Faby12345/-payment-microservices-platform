@@ -1,0 +1,27 @@
+### Initiate an Internal Transfer (Friend)
+POST http://localhost:8082/api/transfers
+Content-Type: application/json
+
+{
+    "fromAccountId": "f1e2d3c4-b5a6-9a8b-7c6d-5e4f3a2b1c0d",
+    "amount": 100.00,
+    "currency": "EUR",
+    "type": "INTERNAL",
+    "recipientIdentifier": "PT50F1E2D3C4B5A69A8B7",
+    "description": "Lunch money"
+}
+
+### Initiate an External Transfer (IBAN)
+POST http://localhost:8082/api/transfers
+Content-Type: application/json
+
+{
+    "fromAccountId": "31969a53-d144-4841-86f3-a3d536762391",
+    "amount": 550.50,
+    "currency": "EUR",
+    "type": "EXTERNAL",
+    "recipientName": "John Doe",
+    "iban": "DE12345678901234567890",
+    "bic": "ALPHADEFFXXX",
+    "description": "Monthly Rent"
+}

@@ -15,9 +15,11 @@ import { type WalletResponse } from '../types/wallet.types';
 
 interface DashboardLayoutProps {
     wallet: WalletResponse | null;
+    selectedAccountId: string | null;
+    onAccountSelect: (id: string | null) => void;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet }) => {
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, selectedAccountId, onAccountSelect }) => {
     const { user, logout } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const navigate = useNavigate();
@@ -150,25 +152,50 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet }) => {
 
                 <section className="bg-[var(--color-brand-bg)] border-b border-white/5 py-3">
                     <div className="flex gap-4 overflow-x-auto no-scrollbar px-6 max-w-5xl mx-auto">
+                        <button 
+                             onClick={() => onAccountSelect(null)}
+                             className={cn(
+                                 "flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-300 border whitespace-nowrap",
+                                 "hover:bg-white/10 active:scale-95 group",
+                                 selectedAccountId === null 
+                                    ? "bg-[var(--color-brand-accent)]/20 border-[var(--color-brand-accent)]/40 shadow-glow-sm" 
+                                    : "bg-white/5 border-white/5 text-[var(--color-brand-secondary)] hover:text-white"
+                             )}>
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-sm">🌍</div>
+                            <div className="flex flex-col items-start leading-none">
+                                <span className="text-[10px] font-black uppercase tracking-tighter mb-1 opacity-60">
+                                    Global
+                                </span>
+                                <span className="font-bold text-xs uppercase tracking-widest">Total Balance</span>
+                            </div>
+                        </button>
+
                         {wallet?.accounts.map(account => (
                             <button key={account.id} 
+                                 onClick={() => onAccountSelect(account.id)}
                                  className={cn(
-                                     "flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-300 border border-white/5 whitespace-nowrap",
-                                     "hover:bg-white/10 active:scale-95 group bg-white/5"
+                                     "flex items-center gap-3 px-4 py-2 rounded-2xl transition-all duration-300 border whitespace-nowrap",
+                                     "hover:bg-white/10 active:scale-95 group",
+                                     selectedAccountId === account.id 
+                                        ? "bg-[var(--color-brand-accent)]/20 border-[var(--color-brand-accent)]/40 shadow-glow-sm" 
+                                        : "bg-white/5 border-white/5"
                                  )}>
-                                <span className="text-xl">{account.currency === 'EUR' ? '🇪🇺' : account.currency === 'USD' ? '🇺🇸' : '🇬🇧'}</span>
+                                <span className="text-xl">{account.currency === 'EUR' ? '🇪🇺' : account.currency === 'USD' ? '🇺🇸' : account.currency === 'GBP' ? '🇬🇧' : '🇷🇴'}</span>
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-[10px] text-[var(--color-brand-secondary)] font-black uppercase tracking-tighter mb-1">
                                         {account.currency}
                                     </span>
-                                    <span className="font-black text-sm">
-                                        {account.currency === 'EUR' ? '€' : account.currency === 'USD' ? '$' : '£'}
+                                    <span className="font-black text-sm text-white">
+                                        {account.currency === 'EUR' ? '€' : account.currency === 'USD' ? '$' : account.currency === 'GBP' ? '£' : 'lei'}
                                         {account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
                             </button>
                         ))}
-                        <button className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-dashed border-white/20 text-[var(--color-brand-secondary)] hover:text-white transition-all bg-transparent">
+                        <button 
+                            onClick={() => navigate('/dashboard')}
+                            className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-dashed border-white/20 text-[var(--color-brand-secondary)] hover:text-white transition-all bg-transparent"
+                        >
                             <IconPlus className="w-4 h-4" />
                             <span className="text-xs font-black uppercase">Add Account</span>
                         </button>
