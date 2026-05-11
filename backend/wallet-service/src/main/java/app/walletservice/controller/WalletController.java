@@ -1,6 +1,7 @@
 package app.walletservice.controller;
 
 import app.walletservice.dto.AccountResponse;
+import app.walletservice.dto.CreateAccountRequest;
 import app.walletservice.dto.CreateWalletRequest;
 import app.walletservice.dto.WalletResponse;
 import app.walletservice.entity.Account;
@@ -42,5 +43,13 @@ public class WalletController {
     public ResponseEntity<AccountResponse> getAccount(@PathVariable UUID accountId) {
         Account account = walletService.getAccountById(accountId);
         return ResponseEntity.ok(walletMapper.toAccountResponse(account));
+    }
+
+    @PostMapping("/{walletId}/accounts")
+    public ResponseEntity<AccountResponse> addAccount(
+            @PathVariable UUID walletId,
+            @RequestBody CreateAccountRequest request) {
+        Account account = walletService.createAccount(walletId, request.getCurrency());
+        return new ResponseEntity<>(walletMapper.toAccountResponse(account), HttpStatus.CREATED);
     }
 }

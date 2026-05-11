@@ -1,9 +1,14 @@
 
 export interface AccountResponse {
     id: string;
+    iban: string;
     currency: string;
     balance: number;
     availableBalance: number;
+}
+
+export interface CreateAccountRequest {
+    currency: string;
 }
 
 export interface WalletResponse {
