@@ -196,6 +196,7 @@ public class WalletServiceImpl implements IWalletService {
                 .orElseThrow(() -> new RuntimeException("Account not found!"));
 
         if (!account.getCurrency().equals(currency)) {
+            log.info("account : " + account.getCurrency() + " " + currency);
             throw new RuntimeException("Currency mismatch!");
         }
 

@@ -9,11 +9,11 @@ import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { type TransactionResponse, type WalletResponse } from '../../types/wallet.types';
 import { AddAccount } from '../../components/ui/AddAccount/AddAccount';
-
 interface OverviewPageProps {
     totalBalance: number;
     transactions: TransactionResponse[];
     wallet: WalletResponse | null;
+    selectedAccountId: string | null;
     onRefresh: () => void;
 }
 
@@ -33,13 +33,27 @@ const QuickAction: React.FC<{ icon: React.ReactNode; label: string; onClick?: ()
     </button>
 );
 
-export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transactions, wallet, onRefresh }) => {
+export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transactions, wallet, selectedAccountId, onRefresh }) => {
     const navigate = useNavigate();
     const [showAddAccount, setShowAddAccount] = useState(false);
+
+    // Filter data based on selected account
+    const selectedAccount = wallet?.accounts.find(a => a.id === selectedAccountId);
+
+    const displayBalance = selectedAccount ? selectedAccount.balance : totalBalance;
+    const displayCurrency = selectedAccount ? selectedAccount.currency : 'EUR';
+    const displayTitle = selectedAccount ? `${selectedAccount.currency} Account` : 'Combined Capital';
+
+    const filteredTransactions = selectedAccountId 
+        ? transactions.filter(tx => 
+            tx.sourceCurrency === selectedAccount?.currency || tx.destinationCurrency === selectedAccount?.currency
+          )
+        : transactions;
 
     return (
         <div className="space-y-6 animate-fade-in relative">
             {/* Modal Overlay for Add Account */}
+
             {showAddAccount && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-brand-bg)]/80 backdrop-blur-md">
                     <div className="w-full max-w-md">
@@ -58,13 +72,20 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
                 
                 <div className="space-y-2">
                     <h2 className="text-[var(--color-brand-secondary)] text-xs font-bold uppercase tracking-[0.2em]">
-                        Combined Capital
+                        {displayTitle}
                     </h2>
                     <div className="flex items-center justify-center gap-2">
                         <span className="text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-                            €{totalBalance.toLocaleString('en-EU', { minimumFractionDigits: 2 })}
+                            {displayCurrency === 'EUR' ? '€' : displayCurrency === 'USD' ? '$' : displayCurrency === 'GBP' ? '£' : ''}
+                            {displayBalance.toLocaleString('en-EU', { minimumFractionDigits: 2 })}
                         </span>
+                        {displayCurrency === 'RON' && <span className="text-2xl font-bold opacity-60 ml-2">lei</span>}
                     </div>
+                    {selectedAccount && (
+                        <div className="text-[10px] font-mono text-[var(--color-brand-secondary)] tracking-widest mt-2 opacity-50">
+                            {selectedAccount.iban}
+                        </div>
+                    )}
                 </div>
 
                 {/* Quick Actions */}
@@ -82,18 +103,20 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
                     <QuickAction icon={<IconExchange className="w-5 h-5" />} label="Exchange" />
                 </div>
             </section>
+{/* --- Recent Activity --- */}
+<section className="space-y-4">
+    <div className="flex items-center justify-between px-2">
+        <h3 className="text-xl font-bold tracking-tight">
+            {selectedAccountId ? 'Account Activity' : 'Recent Activity'}
+        </h3>
+        <button className="text-[var(--color-brand-accent)] text-sm font-semibold hover:underline">View All</button>
+    </div>
 
-            {/* --- Recent Activity --- */}
-            <section className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xl font-bold tracking-tight">Recent Activity</h3>
-                    <button className="text-[var(--color-brand-accent)] text-sm font-semibold hover:underline">View All</button>
-                </div>
+    <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5 shadow-xl">
+        <div className="divide-y divide-white/5">
+            {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((tx) => (
 
-                <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5 shadow-xl">
-                    <div className="divide-y divide-white/5">
-                        {transactions.length > 0 ? (
-                            transactions.map((tx) => (
                                 <div key={tx.id} 
                                      className="flex items-center justify-between p-5 md:p-6 hover:bg-white/5 transition-colors cursor-pointer group">
                                     <div className="flex items-center gap-5">
