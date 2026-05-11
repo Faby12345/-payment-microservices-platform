@@ -1,9 +1,12 @@
 package app.transferservice.service;
 
+import app.transferservice.client.WalletClient;
 import app.transferservice.config.TransferProperties;
+import app.transferservice.dto.AccountResponse;
 import app.transferservice.dto.TransferRequest;
 import app.transferservice.dto.TransferResponse;
 import app.transferservice.event.TransferCreatedEvent;
+import app.transferservice.exception.InvalidTransferException;
 import app.transferservice.model.Transfer;
 import app.transferservice.model.enums.TransactionStatus;
 import app.transferservice.model.enums.TransferType;
@@ -25,11 +28,26 @@ public class TransferServiceImpl implements TransferService {
     private final TransferRepository transferRepository;
     private final TransferProducer transferProducer;
     private final TransferProperties transferProperties;
+    private final WalletClient walletClient;
 
     @Override
     @Transactional
     public TransferResponse initiateTransfer(TransferRequest request) {
         log.info("Initiating transfer request: {}", request);
+
+        // 1. Fetch Source Account Details to get IBAN
+        AccountResponse sourceAccount = walletClient.getAccountDetails(request.fromAccountId());
+        String sourceIban = sourceAccount.getIban();
+
+        // 2. Validate against Self-Transfer
+        String destinationIban = (request.type() == TransferType.INTERNAL) 
+                ? request.recipientIdentifier() 
+                : request.iban();
+
+        if (sourceIban.equalsIgnoreCase(destinationIban)) {
+            log.error("Self-transfer detected for IBAN: {}", sourceIban);
+            throw new InvalidTransferException("You cannot send money to the same account.");
+        }
 
         BigDecimal feePercent = (request.type() == TransferType.EXTERNAL) 
                 ? transferProperties.getExternal() 
@@ -58,6 +76,7 @@ public class TransferServiceImpl implements TransferService {
                 savedTransfer.getId(),
                 savedTransfer.getFromAccountId(),
                 savedTransfer.getAmount(),
+                total, // totalDeducted
                 savedTransfer.getCurrency(),
                 savedTransfer.getType(),
                 savedTransfer.getRecipientIdentifier(),

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { 
@@ -25,27 +25,27 @@ export const WalletPage: React.FC = () => {
     const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            if (!user?.id) return;
-            
-            try {
-                setIsLoading(true);
-                const [walletData, txData] = await Promise.all([
-                    getWalletData(user.id),
-                    getTransactionHistory(user.id)
-                ]);
-                setWallet(walletData);
-                setTransactions(txData);
-            } catch (error) {
-                console.error("Failed to load dashboard data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchDashboardData();
+    const fetchDashboardData = useCallback(async (showLoading = true) => {
+        if (!user?.id) return;
+        
+        try {
+            if (showLoading) setIsLoading(true);
+            const [walletData, txData] = await Promise.all([
+                getWalletData(user.id),
+                getTransactionHistory(user.id)
+            ]);
+            setWallet(walletData);
+            setTransactions(txData);
+        } catch (error) {
+            console.error("Failed to load dashboard data:", error);
+        } finally {
+            if (showLoading) setIsLoading(false);
+        }
     }, [user?.id]);
+
+    useEffect(() => {
+        fetchDashboardData(true);
+    }, [fetchDashboardData]);
 
     const totalBalance = wallet?.accounts.reduce((acc, curr) => acc + curr.balance, 0) || 0;
 
@@ -62,7 +62,13 @@ export const WalletPage: React.FC = () => {
             <Route element={<DashboardLayout wallet={wallet} />}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<OverviewPage totalBalance={totalBalance} transactions={transactions} />} />
-                <Route path="payments" element={<PaymentsPage wallet={wallet} totalBalance={totalBalance} />} />
+                <Route path="payments" element={
+                    <PaymentsPage 
+                        wallet={wallet} 
+                        totalBalance={totalBalance} 
+                        onRefresh={() => fetchDashboardData(false)} 
+                    />
+                } />
                 <Route path="cards" element={<CardsPage />} />
                 <Route path="stats" element={<StatsPage />} />
                 <Route path="hub" element={<HubPage />} />

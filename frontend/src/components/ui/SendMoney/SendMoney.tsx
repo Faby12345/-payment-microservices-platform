@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { IconSend, IconUser, IconCreditCard, IconPlus, IconGrid } from '../Icons';
 import { cn } from '../../../utils/cn';
+import type {TransferRequest} from "../../../types/transfer.types";
+import {submitTransfer} from "../../../services/transferService";
 
 interface SendMoneyProps {
     onClose: () => void;
+    onRefresh?: () => void;
     accounts: Array<{ id: string; balance: number; currency: string; type: string }>;
 }
 
 type TransferType = 'friend' | 'iban';
 
-export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
-    const [mode, setMode] = useState<TransferType>('friend');
+export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accounts }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [mode, setMode] = useState<TransferType>('iban');
     const [selectedAccount, setSelectedAccount] = useState(accounts[0]?.id || '');
     const [amount, setAmount] = useState('');
     const [recipient, setRecipient] = useState('');
@@ -38,22 +42,44 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
     const deliveryTime = isIban ? '1-2 Business Days' : 'Instant';
 
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("Submit button clicked, processing transfer...");
         
-        // This is where you would call your API service
-        const formData = {
-            mode,
+        const request : TransferRequest = {
             fromAccountId: selectedAccount,
             amount: parseFloat(amount),
-            recipient: mode === 'friend' ? recipient : { recipientName, iban, bic },
-            fee,
-            total
-        };
+            currency: currentAccount?.currency || 'USD',
+            type: mode === 'friend' ? 'INTERNAL' : 'EXTERNAL',
+            
+            // recipientIdentifier is the "Master ID" used by the backend to find the target
+            recipientIdentifier: mode === 'friend' ? recipient : iban?.replace(/\s/g, ''),
+            
+            recipientName: mode === 'iban' ? recipientName : undefined,
+            iban: mode === 'iban' ? iban?.replace(/\s/g, '') : undefined,
+            bic: mode === 'iban' ? bic : undefined,
+            description: `Transfer to ${mode === 'friend' ? recipient : recipientName}`
+        }
 
-        console.log("Form Submitted Successfully:", formData);
-        alert(`Transfer of ${amount} ${currentAccount?.currency} to ${mode === 'friend' ? recipient : recipientName} initiated!`);
-        onClose();
+        try {
+            setIsLoading(true);
+            const response = await submitTransfer(request);
+            console.log("Transfer Successful:", response);
+
+            if (onRefresh) {
+                setTimeout(() => {
+                    onRefresh();
+                }, 1000);
+            }
+
+            alert(`Transfer Successful: ${response.message}`);
+            onClose();
+        } catch (err: any) {
+            console.error("Transfer Failed:", err);
+            alert(`Transfer Failed: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
 
@@ -67,7 +93,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                     <div>
                         <h2 className="text-2xl font-bold gradient-text">Send Money</h2>
                         <p className="text-[var(--color-brand-secondary)] text-sm mt-1">
-                            {isIban ? 'Transfer to any bank account worldwide.' : 'Send funds instantly to friends on SecurePay.'}
+                            Transfer instantly via IBAN.
                         </p>
                     </div>
                     <button 
@@ -81,31 +107,8 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                     </button>
                 </div>
 
-                {/* Mode Selector */}
-                <div className="flex p-1 bg-white/5 rounded-2xl mb-8 border border-white/5">
-                    <button 
-                        type="button"
-                        onClick={() => setMode('friend')}
-                        className={cn(
-                            "flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
-                            mode === 'friend' ? "bg-[var(--color-brand-accent)] text-white shadow-glow-sm" : "text-[var(--color-brand-secondary)] hover:text-white"
-                        )}
-                    >
-                        <IconUser className="w-4 h-4" />
-                        To Friend
-                    </button>
-                    <button 
-                        type="button"
-                        onClick={() => setMode('iban')}
-                        className={cn(
-                            "flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
-                            mode === 'iban' ? "bg-[var(--color-brand-accent)] text-white shadow-glow-sm" : "text-[var(--color-brand-secondary)] hover:text-white"
-                        )}
-                    >
-                        <IconGrid className="w-4 h-4" />
-                        Via IBAN
-                    </button>
-                </div>
+                {/* Mode Selector Hidden */}
+                <div className="hidden" />
 
                 {/* 1. Source Account Selection */}
                 <div className="mb-8">
@@ -292,16 +295,20 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, accounts }) => {
                 {/* 5. Action Button */}
                 <button 
                     type="submit"
-                    disabled={!amount || isOverBalance || (mode === 'friend' ? !recipient : !iban || !recipientName)}
+                    disabled={isLoading || !amount || isOverBalance || (mode === 'friend' ? !recipient : !iban || !recipientName)}
                     className={cn(
                         "w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-glow",
-                        (!amount || isOverBalance || (mode === 'friend' ? !recipient : !iban || !recipientName))
+                        (isLoading || !amount || isOverBalance || (mode === 'friend' ? !recipient : !iban || !recipientName))
                             ? "bg-white/10 text-white/20 cursor-not-allowed"
                             : "bg-[var(--color-brand-accent)] text-white hover:bg-[var(--color-brand-accent-light)] active:scale-[0.98]"
                     )}
                 >
-                    <IconSend className="w-5 h-5" />
-                    Confirm & Send
+                    {isLoading ? (
+                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <IconSend className="w-5 h-5" />
+                    )}
+                    {isLoading ? 'Processing...' : 'Confirm & Send'}
                 </button>
             </div>
         </form>

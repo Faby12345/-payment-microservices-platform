@@ -11,6 +11,7 @@ public record TransferCreatedEvent(
     UUID transferId,
     UUID fromAccountId,
     BigDecimal amount,
+    BigDecimal totalDeducted, // Total amount to be taken from sender (including fees)
     String currency,
     TransferType type,
     String recipientIdentifier,

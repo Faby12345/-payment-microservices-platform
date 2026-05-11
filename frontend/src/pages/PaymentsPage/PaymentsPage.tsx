@@ -7,9 +7,10 @@ import { type WalletResponse } from '../../types/wallet.types';
 interface PaymentsPageProps {
     wallet: WalletResponse | null;
     totalBalance: number;
+    onRefresh?: () => void;
 }
 
-export const PaymentsPage: React.FC<PaymentsPageProps> = ({ wallet, totalBalance }) => {
+export const PaymentsPage: React.FC<PaymentsPageProps> = ({ wallet, totalBalance, onRefresh }) => {
     const navigate = useNavigate();
 
     return (
@@ -33,6 +34,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ wallet, totalBalance
 
             <SendMoney 
                 onClose={() => navigate('/dashboard')} 
+                onRefresh={onRefresh}
                 accounts={wallet?.accounts.map(a => ({
                     id: a.id,
                     balance: a.balance,

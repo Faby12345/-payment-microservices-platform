@@ -1,8 +1,6 @@
 package app.walletservice.service;
 
-import app.walletservice.config.RabbitMQConfig;
 import app.walletservice.entity.*;
-import app.walletservice.event.TransferCreatedEvent;
 import app.walletservice.repository.AccountRepository;
 import app.walletservice.repository.TransactionHoldRepository;
 import app.walletservice.repository.TransactionRepository;
@@ -11,7 +9,6 @@ import app.walletservice.service.interfaces.IWalletService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -34,12 +31,10 @@ public class WalletServiceImpl implements IWalletService {
     @Transactional
     @Override
     public Wallet createWallet(UUID userId, String defaultCurrency) {
-
+        log.info("Creating new wallet for user: {} with currency: {}", userId, defaultCurrency);
         Wallet newWallet = new Wallet(userId, WalletStatus.ACTIVE);
         newWallet = walletRepository.save(newWallet);
-
         createAccount(newWallet.getId(), defaultCurrency);
-
         return newWallet;
     }
 
@@ -52,6 +47,7 @@ public class WalletServiceImpl implements IWalletService {
     @Transactional
     @Override
     public Account createAccount(UUID walletId, String currency) {
+        log.info("Creating new account for wallet: {} with currency: {}", walletId, currency);
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + walletId));
 
@@ -67,8 +63,6 @@ public class WalletServiceImpl implements IWalletService {
     }
 
     private String generateIban() {
-        // Simplified Platform IBAN format:
-        // DE (Country) + 99 (Check) + PAYM (Bank) + 10 random digits
         StringBuilder sb = new StringBuilder("RO99PAYM");
         for (int i = 0; i < 10; i++) {
             sb.append(random.nextInt(10));
@@ -81,17 +75,26 @@ public class WalletServiceImpl implements IWalletService {
         return accountRepository.findByWalletUserId(userId);
     }
 
+    @Override
+    public Account getAccountById(UUID accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
+    }
+
     @Transactional
     @Override
     public TransactionHold reserveFunds(UUID accountId, BigDecimal amount,
                                         String currency, String reference,
+                                        String description,
                                         String idempotencyKey) {
+        log.info("Reserving funds: Account={}, Amount={}, Key={}", accountId, amount, idempotencyKey);
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("account not found!"));
 
         if(transactionHoldRepository.existsByIdempotencyKey(idempotencyKey)){
-            throw new RuntimeException("Transaction amount is already hold!");
+            log.warn("Hold already exists for key: {}", idempotencyKey);
+            return transactionHoldRepository.findByIdempotencyKey(idempotencyKey).get();
         }
 
         if (!account.getCurrency().equals(currency)) {
@@ -99,17 +102,17 @@ public class WalletServiceImpl implements IWalletService {
         }
 
         if(amount.compareTo(BigDecimal.ZERO) <= 0){
-            throw new RuntimeException("Amount should be grated than 0!");
+            throw new RuntimeException("Amount should be greater than 0!");
         }
 
         if(account.getAvailableBalance().compareTo(amount) < 0){
-            throw new RuntimeException("The amount requested is grater then available balance!");
+            log.error("Insufficient available balance: Account={}, Required={}, Available={}", 
+                    accountId, amount, account.getAvailableBalance());
+            throw new RuntimeException("Insufficient available balance!");
         }
-
 
         account.setAvailableBalance(account.getAvailableBalance().subtract(amount));
         accountRepository.save(account);
-
 
         TransactionHold newTransactionHold = new TransactionHold(
                 account,
@@ -117,62 +120,63 @@ public class WalletServiceImpl implements IWalletService {
                 currency,
                 TransactionHoldStatus.HELD,
                 reference,
+                description,
                 idempotencyKey);
 
         return transactionHoldRepository.save(newTransactionHold);
-
-
     }
 
     @Transactional
     @Override
     public void settleHold(UUID holdId) {
+        log.info("Settling hold: {}", holdId);
         TransactionHold transactionHold = transactionHoldRepository.findById(holdId)
-                .orElseThrow(() -> new RuntimeException("Transaction hold dosen t exists!"));
+                .orElseThrow(() -> new RuntimeException("Transaction hold doesn't exist!"));
 
         if(transactionHold.getStatus() != TransactionHoldStatus.HELD){
-            throw new RuntimeException("Hold cannot be settled because it is " + transactionHold.getStatus());
+            log.warn("Hold {} is in state {}, cannot settle.", holdId, transactionHold.getStatus());
+            return;
         }
 
         Account account = transactionHold.getAccount();
-
-        account.setBalance(account.getBalance().subtract(transactionHold.getAmount()));
+        BigDecimal currentBalance = account.getBalance();
+        account.setBalance(currentBalance.subtract(transactionHold.getAmount()));
         accountRepository.save(account);
 
         transactionHold.setStatus(TransactionHoldStatus.SETTLED);
         transactionHoldRepository.save(transactionHold);
 
-
-             Transaction transaction = Transaction.builder()
-                    .fromAccount(account)
-                    .type(TransactionType.TRANSFER)
-                    .status(TransactionStatus.COMPLETED)
-                    .sourceAmount(transactionHold.getAmount())
-                    .sourceCurrency(transactionHold.getCurrency())
-                    .destinationAmount(transactionHold.getAmount())
-                    .destinationCurrency(transactionHold.getCurrency())
-                    .reference(transactionHold.getReference())
-                    .idempotencyKey(transactionHold.getIdempotencyKey())
-                   .build();
+        Transaction transaction = Transaction.builder()
+                .fromAccount(account)
+                .type(TransactionType.TRANSFER)
+                .status(TransactionStatus.COMPLETED)
+                .sourceAmount(transactionHold.getAmount())
+                .sourceCurrency(transactionHold.getCurrency())
+                .destinationAmount(transactionHold.getAmount())
+                .destinationCurrency(transactionHold.getCurrency())
+                .reference(transactionHold.getReference())
+                .description(transactionHold.getDescription())
+                .idempotencyKey(transactionHold.getIdempotencyKey())
+                .build();
 
         transactionRepository.save(transaction);
+        log.info("Hold {} settled. New balance: {}", holdId, account.getBalance());
     }
 
     @Transactional
     @Override
     public void releaseHold(UUID holdId) {
+        log.info("Releasing hold: {}", holdId);
         TransactionHold transactionHold = transactionHoldRepository.findById(holdId)
-                .orElseThrow(() -> new RuntimeException("Transaction hold dosen t exists!"));
+                .orElseThrow(() -> new RuntimeException("Transaction hold doesn't exist!"));
 
         if(transactionHold.getStatus() != TransactionHoldStatus.HELD){
-            throw new RuntimeException("Hold cannot be released because it is " + transactionHold.getStatus());
+            return;
         }
 
         Account account = transactionHold.getAccount();
-
         account.setAvailableBalance(account.getAvailableBalance().add(transactionHold.getAmount()));
         accountRepository.save(account);
-
 
         transactionHold.setStatus(TransactionHoldStatus.RELEASED);
         transactionHoldRepository.save(transactionHold);
@@ -180,9 +184,12 @@ public class WalletServiceImpl implements IWalletService {
 
     @Transactional
     @Override
-    public void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String idempotencyKey) {
+    public void creditAccount(UUID accountId, BigDecimal amount, String currency, String reference, String description, String idempotencyKey) {
+        log.info("Crediting account: Account={}, Amount={}, Key={}", accountId, amount, idempotencyKey);
+        
         if (transactionRepository.findByIdempotencyKey(idempotencyKey).isPresent()) {
-            return; //  already processed
+            log.warn("Transaction already exists for key: {}", idempotencyKey);
+            return; 
         }
 
         Account account = accountRepository.findById(accountId)
@@ -192,15 +199,9 @@ public class WalletServiceImpl implements IWalletService {
             throw new RuntimeException("Currency mismatch!");
         }
 
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Amount must be greater than zero!");
-        }
-
-
         account.setBalance(account.getBalance().add(amount));
         account.setAvailableBalance(account.getAvailableBalance().add(amount));
         accountRepository.save(account);
-
 
         Transaction transaction = Transaction.builder()
                 .toAccount(account)
@@ -211,11 +212,11 @@ public class WalletServiceImpl implements IWalletService {
                 .destinationAmount(amount)
                 .destinationCurrency(currency)
                 .reference(reference)
+                .description(description)
                 .idempotencyKey(idempotencyKey)
                 .build();
 
         transactionRepository.save(transaction);
+        log.info("Account {} credited. New balance: {}", accountId, account.getBalance());
     }
-
-
 }

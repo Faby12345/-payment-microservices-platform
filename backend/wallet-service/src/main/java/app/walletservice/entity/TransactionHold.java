@@ -18,12 +18,13 @@ public class TransactionHold extends BaseEntity {
 
     public TransactionHold(Account account, BigDecimal amount,
                            String currency, TransactionHoldStatus status,
-                           String reference, String idempotencyKey) {
+                           String reference, String description, String idempotencyKey) {
         this.account = account;
         this.amount = amount;
         this.currency = currency;
         this.status = status;
         this.reference = reference;
+        this.description = description;
         this.idempotencyKey = idempotencyKey;
         this.expiresAt = LocalDateTime.now().plusHours(24);
     }
@@ -51,6 +52,9 @@ public class TransactionHold extends BaseEntity {
 
     @Column(name = "reference", unique = true, length = 64)
     private String reference;
+
+    @Column(name = "description", length = 255)
+    private String description;
 
     @Column(name = "idempotency_key", unique = true, length = 64)
     private String idempotencyKey;

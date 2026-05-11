@@ -7,6 +7,7 @@ public record TransferCreatedEvent(
     UUID transferId,
     UUID fromAccountId,
     BigDecimal amount,
+    BigDecimal totalDeducted,
     String currency,
     TransferType type,
     String recipientIdentifier,

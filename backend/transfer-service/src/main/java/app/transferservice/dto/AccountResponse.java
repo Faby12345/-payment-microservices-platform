@@ -1,4 +1,4 @@
-package app.walletservice.dto;
+package app.transferservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
