@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
     IconPlus, 
     IconExchange, 
@@ -7,11 +7,14 @@ import {
 } from '../../components/ui/Icons';
 import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
-import { type TransactionResponse } from '../../types/wallet.types';
+import { type TransactionResponse, type WalletResponse } from '../../types/wallet.types';
+import { AddAccount } from '../../components/ui/AddAccount/AddAccount';
 
 interface OverviewPageProps {
     totalBalance: number;
     transactions: TransactionResponse[];
+    wallet: WalletResponse | null;
+    onRefresh: () => void;
 }
 
 const QuickAction: React.FC<{ icon: React.ReactNode; label: string; onClick?: () => void }> = ({ icon, label, onClick }) => (
@@ -30,11 +33,25 @@ const QuickAction: React.FC<{ icon: React.ReactNode; label: string; onClick?: ()
     </button>
 );
 
-export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transactions }) => {
+export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transactions, wallet, onRefresh }) => {
     const navigate = useNavigate();
+    const [showAddAccount, setShowAddAccount] = useState(false);
 
     return (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in relative">
+            {/* Modal Overlay for Add Account */}
+            {showAddAccount && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-brand-bg)]/80 backdrop-blur-md">
+                    <div className="w-full max-w-md">
+                        <AddAccount 
+                            walletId={wallet?.id || ''} 
+                            onClose={() => setShowAddAccount(false)} 
+                            onRefresh={onRefresh} 
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* --- Balance Hero Section --- */}
             <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-b from-[var(--color-brand-accent)]/20 to-transparent p-8 md:p-10 text-center border border-white/5 shadow-2xl">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[var(--color-brand-accent)]/30 blur-[80px] rounded-full -z-10 animate-pulse" />
@@ -52,7 +69,11 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
 
                 {/* Quick Actions */}
                 <div className="mt-8 flex justify-center gap-6 md:gap-10">
-                    <QuickAction icon={<IconPlus className="w-5 h-5" />} label="Add" />
+                    <QuickAction 
+                        icon={<IconPlus className="w-5 h-5" />} 
+                        label="Add" 
+                        onClick={() => setShowAddAccount(true)}
+                    />
                     <QuickAction 
                         icon={<IconSend className="w-5 h-5" />} 
                         label="Send" 

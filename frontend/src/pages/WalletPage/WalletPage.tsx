@@ -61,7 +61,14 @@ export const WalletPage: React.FC = () => {
         <Routes>
             <Route element={<DashboardLayout wallet={wallet} />}>
                 <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<OverviewPage totalBalance={totalBalance} transactions={transactions} />} />
+                <Route path="dashboard" element={
+                    <OverviewPage 
+                        totalBalance={totalBalance} 
+                        transactions={transactions} 
+                        wallet={wallet}
+                        onRefresh={() => fetchDashboardData(false)}
+                    />
+                } />
                 <Route path="payments" element={
                     <PaymentsPage 
                         wallet={wallet} 
