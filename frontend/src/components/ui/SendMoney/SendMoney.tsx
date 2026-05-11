@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IconSend, IconUser, IconCreditCard, IconPlus, IconGrid } from '../Icons';
+import { IconSend, IconUser, IconCreditCard, IconPlus, IconGrid, IconAlert } from '../Icons';
 import { cn } from '../../../utils/cn';
 import type {TransferRequest} from "../../../types/transfer.types";
 import {submitTransfer} from "../../../services/transferService";
@@ -14,6 +14,7 @@ type TransferType = 'friend' | 'iban';
 
 export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accounts }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [mode, setMode] = useState<TransferType>('iban');
     const [selectedAccount, setSelectedAccount] = useState(accounts[0]?.id || '');
     const [amount, setAmount] = useState('');
@@ -63,6 +64,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
 
         try {
             setIsLoading(true);
+            setError(null);
             const response = await submitTransfer(request);
             console.log("Transfer Successful:", response);
 
@@ -76,7 +78,8 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
             onClose();
         } catch (err: any) {
             console.error("Transfer Failed:", err);
-            alert(`Transfer Failed: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+            const backendMessage = err.response?.data?.message;
+            setError(backendMessage || err.message || 'An unexpected error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -120,7 +123,10 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                             <button
                                 key={acc.id}
                                 type="button"
-                                onClick={() => setSelectedAccount(acc.id)}
+                                onClick={() => {
+                                    setSelectedAccount(acc.id);
+                                    setError(null);
+                                }}
                                 className={cn(
                                     "p-4 rounded-xl border text-left transition-all duration-300 relative overflow-hidden group",
                                     selectedAccount === acc.id 
@@ -181,7 +187,10 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                                     type="text"
                                     placeholder="Email, phone or wallet address"
                                     value={recipient}
-                                    onChange={(e) => setRecipient(e.target.value)}
+                                    onChange={(e) => {
+                                        setRecipient(e.target.value);
+                                        setError(null);
+                                    }}
                                     className="input-base pl-12 pt-4 pb-4 h-14"
                                 />
                             </div>
@@ -194,7 +203,10 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                                     type="text"
                                     placeholder="John Doe"
                                     value={recipientName}
-                                    onChange={(e) => setRecipientName(e.target.value)}
+                                    onChange={(e) => {
+                                        setRecipientName(e.target.value);
+                                        setError(null);
+                                    }}
                                     className="input-base pt-8 pb-4 h-16"
                                 />
                             </div>
@@ -211,6 +223,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                                             // Add space every 4 characters
                                             const formattedValue = rawValue.match(/.{1,4}/g)?.join(' ') || rawValue;
                                             setIban(formattedValue);
+                                            setError(null);
                                         }}
                                         className="input-base pt-8 pb-4 h-16 tracking-widest font-mono text-sm"
                                     />
@@ -243,7 +256,10 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                             type="number"
                             placeholder="0.00"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={(e) => {
+                                setAmount(e.target.value);
+                                setError(null);
+                            }}
                             className={cn(
                                 "input-base pt-8 pb-4 h-20 text-3xl font-bold transition-all",
                                 isOverBalance && "border-[var(--color-brand-error)] text-[var(--color-brand-error)] animate-shake shadow-[0_0_20px_rgba(255,77,106,0.1)]"
@@ -291,6 +307,16 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                         </div>
                     </div>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 rounded-xl bg-[var(--color-brand-error)]/10 border border-[var(--color-brand-error)]/20 flex items-start gap-3 animate-fade-in">
+                        <IconAlert className="w-5 h-5 text-[var(--color-brand-error)] shrink-0 mt-0.5" />
+                        <div className="text-sm text-[var(--color-brand-error)] font-medium">
+                            {error}
+                        </div>
+                    </div>
+                )}
 
                 {/* 5. Action Button */}
                 <button 
