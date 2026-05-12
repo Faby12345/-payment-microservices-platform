@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
     IconPlus,
     IconExchange, 
     IconSend,
-    IconChartBar
+    IconChartBar,
+    IconCopy,
+    IconCheck
 } from '../../components/ui/Icons';
 import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
@@ -35,9 +37,18 @@ const QuickAction: React.FC<{ icon: React.ReactNode; label: string; onClick?: ()
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transactions, wallet, selectedAccountId, onRefresh }) => {
     const navigate = useNavigate();
+    const [copied, setCopied] = useState(false);
 
     // Filter data based on selected account
     const selectedAccount = wallet?.accounts.find(a => a.id === selectedAccountId);
+
+    const handleCopyIban = () => {
+        if (selectedAccount?.iban) {
+            navigator.clipboard.writeText(selectedAccount.iban);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     const displayBalance = selectedAccount ? selectedAccount.balance : totalBalance;
     const displayCurrency = selectedAccount ? selectedAccount.currency : 'EUR';
@@ -67,7 +78,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
                         {displayCurrency === 'RON' && <span className="text-2xl font-bold opacity-60 ml-2">lei</span>}
                     </div>
                     {selectedAccount && (
-                        <div className="text-[10px] font-mono text-[var(--color-brand-secondary)] tracking-widest mt-2 opacity-50">
+                        <div className="text-[15px] font-mono text-[var(--color-brand-secondary)] tracking-widest mt-2 opacity-70">
                             {selectedAccount.iban}
                         </div>
                     )}
@@ -79,6 +90,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
                         icon={<IconPlus className="w-5 h-5" />} 
                         label="Add" 
                     />
+                    {selectedAccount && (
+                        <QuickAction 
+                            icon={copied ? <IconCheck className="w-5 h-5" /> : <IconCopy className="w-5 h-5" />} 
+                            label={copied ? "Copied" : "Copy"} 
+                            onClick={handleCopyIban}
+                        />
+                    )}
                     <QuickAction 
                         icon={<IconSend className="w-5 h-5" />} 
                         label="Send" 
