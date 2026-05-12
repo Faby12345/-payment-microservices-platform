@@ -30,6 +30,11 @@ public interface IExchangeRateService {
     List<ExchangeRateHistory> getHistoryByDate(LocalDate date);
 
     /**
+     * Returns historical rates for a specific pair.
+     */
+    List<ExchangeRateHistory> getHistoryForPair(String baseCurrency, String targetCurrency);
+
+    /**
      * Manually updates a specific exchange rate.
      */
     void updateRate(String baseCurrency, String targetCurrency, BigDecimal rate);

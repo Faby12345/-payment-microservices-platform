@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface ExchangeRateHistoryRepository extends JpaRepository<ExchangeRateHistory, UUID> {
     boolean existsByRateDate(LocalDate rateDate);
+    List<ExchangeRateHistory> findByBaseCurrencyAndTargetCurrencyOrderByRateDateDesc(String baseCurrency, String targetCurrency);
 }
