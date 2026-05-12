@@ -48,6 +48,16 @@ public class ExchangeRateController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/history/{base}/{target}")
+    public ResponseEntity<List<ExchangeRateHistoryResponse>> getHistoryForPair(
+            @PathVariable String base,
+            @PathVariable String target) {
+        List<ExchangeRateHistoryResponse> responses = exchangeRateService.getHistoryForPair(base, target).stream()
+                .map(this::mapToHistoryResponse)
+                .toList();
+        return ResponseEntity.ok(responses);
+    }
+
     @PostMapping("/sync")
     public ResponseEntity<Void> triggerSync() {
         exchangeRateService.fetchAndProcessRates();
