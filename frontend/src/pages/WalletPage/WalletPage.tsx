@@ -13,7 +13,7 @@ import {
 import { DashboardLayout } from '../../layouts/DashboardLayout';
 import { OverviewPage } from '../OverviewPage/OverviewPage';
 import { PaymentsPage } from '../PaymentsPage/PaymentsPage';
-import { CardsPage } from '../CardsPage/CardsPage';
+import { MarketsPage } from '../MarketsPage/MarketsPage';
 import { StatsPage } from '../StatsPage/StatsPage';
 import { HubPage } from '../HubPage/HubPage';
 
@@ -67,7 +67,7 @@ export const WalletPage: React.FC = () => {
                     onAccountSelect={setSelectedAccountId}
                 />
             }>
-                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route index element={<Navigate to="./dashboard" replace />} />
                 <Route path="dashboard" element={
                     <OverviewPage 
                         totalBalance={totalBalance} 
@@ -84,12 +84,12 @@ export const WalletPage: React.FC = () => {
                         onRefresh={() => fetchDashboardData(false)} 
                     />
                 } />
-                <Route path="cards" element={<CardsPage />} />
+                <Route path="markets" element={<MarketsPage />} />
                 <Route path="stats" element={<StatsPage />} />
                 <Route path="hub" element={<HubPage />} />
                 
                 {/* Fallback */}
-                <Route path="*" element={<Navigate to="dashboard" replace />} />
+                <Route path="*" element={<Navigate to="./dashboard" replace />} />
             </Route>
         </Routes>
     );

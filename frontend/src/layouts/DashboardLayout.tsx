@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { 
-    IconPlus, 
     IconSend, 
     IconHome, 
-    IconCreditCard, 
     IconChartBar, 
     IconGrid,
-    IconUser
+    IconUser,
+    IconPlus
 } from '../components/ui/Icons';
 import { cn } from '../utils/cn';
 import { type WalletResponse } from '../types/wallet.types';
@@ -26,7 +25,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
 
     const navItems = [
         { id: 'home', path: '/dashboard', label: 'Home', icon: <IconHome /> },
-        { id: 'cards', path: '/cards', label: 'Cards', icon: <IconCreditCard /> },
+        { id: 'markets', path: '/markets', label: 'Markets', icon: <IconChartBar /> },
         { id: 'payments', path: '/payments', label: 'Payments', icon: <IconSend /> },
         { id: 'stats', path: '/stats', label: 'Stats', icon: <IconChartBar /> },
         { id: 'hub', path: '/hub', label: 'Hub', icon: <IconGrid /> },
@@ -75,6 +74,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
                         <NavLink
                             key={item.id}
                             to={item.path}
+                            end={item.path === '/dashboard'}
                             onClick={() => {
                                 if(window.innerWidth < 1024) setIsSidebarOpen(false);
                             }}

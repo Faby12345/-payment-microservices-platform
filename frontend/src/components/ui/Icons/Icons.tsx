@@ -101,3 +101,15 @@ export const IconAlert: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
 );
+
+export const IconArrowUp: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7 7 7M12 3v18" />
+    </svg>
+);
+
+export const IconArrowDown: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7-7-7M12 21V3" />
+    </svg>
+);
