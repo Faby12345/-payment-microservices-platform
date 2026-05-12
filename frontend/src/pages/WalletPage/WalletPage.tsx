@@ -25,6 +25,7 @@ export const WalletPage: React.FC = () => {
     const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+    const [showAddAccount, setShowAddAccount] = useState(false);
 
     const fetchDashboardData = useCallback(async (showLoading = true) => {
         if (!user?.id) return;
@@ -65,6 +66,9 @@ export const WalletPage: React.FC = () => {
                     wallet={wallet} 
                     selectedAccountId={selectedAccountId}
                     onAccountSelect={setSelectedAccountId}
+                    onRefresh={() => fetchDashboardData(false)}
+                    showAddAccount={showAddAccount}
+                    setShowAddAccount={setShowAddAccount}
                 />
             }>
                 <Route index element={<Navigate to="./dashboard" replace />} />
@@ -75,6 +79,7 @@ export const WalletPage: React.FC = () => {
                         wallet={wallet}
                         selectedAccountId={selectedAccountId}
                         onRefresh={() => fetchDashboardData(false)}
+                        onAddAccount={() => setShowAddAccount(true)}
                     />
                 } />
                 <Route path="payments" element={

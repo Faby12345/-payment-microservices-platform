@@ -11,17 +11,20 @@ import {
 } from '../components/ui/Icons';
 import { cn } from '../utils/cn';
 import { type WalletResponse } from '../types/wallet.types';
+import {AddAccount} from "../components/ui/AddAccount/AddAccount.tsx";
 
 interface DashboardLayoutProps {
     wallet: WalletResponse | null;
     selectedAccountId: string | null;
     onAccountSelect: (id: string | null) => void;
+    onRefresh: () => void;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, selectedAccountId, onAccountSelect }) => {
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, selectedAccountId, onAccountSelect, onRefresh }) => {
     const { user, logout } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const navigate = useNavigate();
+    const [showAddAccount, setShowAddAccount] = useState(false)
 
     const navItems = [
         { id: 'home', path: '/dashboard', label: 'Home', icon: <IconHome /> },
@@ -39,6 +42,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
     return (
         <div className="min-h-screen bg-[var(--color-brand-bg)] text-white flex overflow-hidden relative">
             
+            {/* Modal Overlay for Add Account */}
+            {showAddAccount && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[var(--color-brand-bg)]/80 backdrop-blur-md">
+                    <div className="w-full max-w-md">
+                        <AddAccount 
+                            walletId={wallet?.id || ''} 
+                            onClose={() => setShowAddAccount(false)} 
+                            onRefresh={onRefresh} 
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Backdrop Overlay (Mobile only) */}
             <div 
                 className={cn(
@@ -192,8 +208,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
                                 </div>
                             </button>
                         ))}
+                        
                         <button 
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => setShowAddAccount(true)}
                             className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-dashed border-white/20 text-[var(--color-brand-secondary)] hover:text-white transition-all bg-transparent"
                         >
                             <IconPlus className="w-4 h-4" />
