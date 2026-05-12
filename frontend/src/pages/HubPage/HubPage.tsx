@@ -8,7 +8,7 @@ import {
 } from '../../components/ui/Icons';
 import { cn } from '../../utils/cn';
 
-type DocSection = 'intro' | 'wallet-get' | 'wallet-create' | 'rates-euro' | 'rates-all';
+type DocSection = 'intro' | 'wallet-get' | 'wallet-create' | 'rates-euro' | 'rates-all' | 'rates-history';
 
 const CodeBlock: React.FC<{ code: string; language: string }> = ({ code, language }) => {
     const [copied, setCopied] = useState(false);
@@ -100,6 +100,7 @@ export const HubPage: React.FC = () => {
                     <div className="mt-2 ml-4 space-y-1 border-l border-white/5 pl-2 animate-slide-up">
                         <NavItem id="rates-euro" label="EUR Base Rates" />
                         <NavItem id="rates-all" label="Global Rates (BNR)" />
+                        <NavItem id="rates-history" label="Rate History" />
                     </div>
                 )}
             </div>
@@ -111,7 +112,8 @@ export const HubPage: React.FC = () => {
         'wallet-get': 'Retrieve Wallet',
         'wallet-create': 'Add Account',
         'rates-euro': 'EUR Base Rates',
-        'rates-all': 'Global Rates (BNR)'
+        'rates-all': 'Global Rates (BNR)',
+        'rates-history': 'Rate History'
     }[activeSection];
 
     return (
@@ -252,6 +254,43 @@ export const HubPage: React.FC = () => {
                                 code={`curl -X POST "/api/wallets/{walletId}/accounts" \\\n     -d '{"currency": "USD"}'`}
                             />
                             <p className="text-[var(--color-brand-secondary)] text-sm md:text-base">Instantly provisions a new IBAN for the requested currency.</p>
+                        </div>
+                    )}
+
+                    {activeSection === 'rates-history' && (
+                        <div className="space-y-8 animate-slide-up">
+                            <header>
+                                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                    <span className="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-black rounded border border-green-500/20 uppercase">GET</span>
+                                    <h2 className="text-xl md:text-2xl font-bold">Exchange Rate History</h2>
+                                </div>
+                                <p className="text-[var(--color-brand-secondary)] text-sm md:text-base">Retrieve time-series data or specific historical rates.</p>
+                            </header>
+
+                            <section className="space-y-4">
+                                <h3 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Fetch by Pair (Trend Data)</h3>
+                                <p className="text-xs text-[var(--color-brand-secondary)]">Useful for building trend charts. Returns all historical points for a pair.</p>
+                                <CodeBlock 
+                                    language="HTTP"
+                                    code={`GET /api/v1/exchange-rates/history/{base}/{target}`}
+                                />
+                            </section>
+
+                            <section className="space-y-4">
+                                <h3 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Fetch by Date</h3>
+                                <CodeBlock 
+                                    language="HTTP"
+                                    code={`GET /api/v1/exchange-rates/history/2026-05-12`}
+                                />
+                            </section>
+
+                            <section className="space-y-4">
+                                <h3 className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/40">Response Structure</h3>
+                                <CodeBlock 
+                                    language="json"
+                                    code={`[\n  {\n    "baseCurrency": "RON",\n    "targetCurrency": "EUR",\n    "rate": 4.9875,\n    "rateDate": "2026-05-11"\n  },\n  {\n    "baseCurrency": "RON",\n    "targetCurrency": "EUR",\n    "rate": 4.9840,\n    "rateDate": "2026-05-10"\n  }\n]`}
+                                />
+                            </section>
                         </div>
                     )}
 
