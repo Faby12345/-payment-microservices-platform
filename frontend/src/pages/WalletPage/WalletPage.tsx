@@ -15,6 +15,7 @@ import { DashboardLayout } from '../../layouts/DashboardLayout';
 import { OverviewPage } from '../OverviewPage/OverviewPage';
 import { PaymentsPage } from '../PaymentsPage/PaymentsPage';
 import { MarketsPage } from '../MarketsPage/MarketsPage';
+import { CurrencyDetailsPage } from '../MarketsPage/CurrencyDetailsPage';
 import { StatsPage } from '../StatsPage/StatsPage';
 import { HubPage } from '../HubPage/HubPage';
 
@@ -115,6 +116,7 @@ export const WalletPage: React.FC = () => {
                     />
                 } />
                 <Route path="markets" element={<MarketsPage />} />
+                <Route path="markets/:currency" element={<CurrencyDetailsPage />} />
                 <Route path="stats" element={<StatsPage />} />
                 <Route path="hub" element={<HubPage />} />
                 
