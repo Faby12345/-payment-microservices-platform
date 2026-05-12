@@ -6,7 +6,7 @@ import {submitTransfer} from "../../../services/transferService";
 
 interface SendMoneyProps {
     onClose: () => void;
-    onRefresh?: () => void;
+    onRefresh: (page?: number) => void;
     accounts: Array<{ id: string; balance: number; currency: string; type: string }>;
 }
 
@@ -26,7 +26,7 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
     const fee = amount ? (parseFloat(amount) * feePercentage).toFixed(2) : '0.00';
     const total = amount ? (parseFloat(amount) + parseFloat(fee)).toFixed(2) : '0.00';
     const isOverBalance = currentAccount ? parseFloat(total) > currentAccount.balance : false;
-
+    const isNegativeBalance = parseFloat(total) < 0 || parseFloat(amount) < 0 ? true : false;
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const request : TransferRequest = {
@@ -191,7 +191,8 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                                     onChange={(e) => setAmount(e.target.value)}
                                     className={cn(
                                         "w-full h-20 bg-white/5 border border-white/5 rounded-3xl px-8 text-4xl font-black tabular-nums focus:border-[var(--color-brand-accent)]/50 outline-none transition-all",
-                                        isOverBalance && "border-red-400/50 text-red-400"
+                                        isOverBalance && "border-red-400/50 text-red-400",
+
                                     )}
                                 />
                                 <span className="absolute right-8 top-1/2 -translate-y-1/2 font-black text-2xl text-[var(--color-brand-secondary)]">
@@ -210,7 +211,8 @@ export const SendMoney: React.FC<SendMoneyProps> = ({ onClose, onRefresh, accoun
                                 <span className="text-[9px] font-black text-[var(--color-brand-secondary)] uppercase tracking-widest block">Total Deducted</span>
                                 <span className={cn(
                                     "text-2xl font-black tracking-tighter tabular-nums",
-                                    isOverBalance ? "text-red-400" : "gradient-text"
+                                    isOverBalance || isNegativeBalance ? "text-red-400" : "gradient-text",
+
                                 )}>
                                     {total} {currentAccount?.currency}
                                 </span>

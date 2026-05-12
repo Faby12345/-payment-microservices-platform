@@ -7,7 +7,7 @@ import { type WalletResponse } from '../../types/wallet.types';
 interface PaymentsPageProps {
     wallet: WalletResponse | null;
     totalBalance: number;
-    onRefresh?: () => void;
+    onRefresh: (page?: number) => void;
 }
 
 export const PaymentsPage: React.FC<PaymentsPageProps> = ({ wallet, totalBalance, onRefresh }) => {

@@ -26,6 +26,8 @@ public class TransactionMapper {
                 .description(transaction.getDescription())
                 .reference(transaction.getReference())
                 .createdAt(transaction.getCreatedAt())
+                .fromAccountId(transaction.getFromAccount() != null ? transaction.getFromAccount().getId() : null)
+                .toAccountId(transaction.getToAccount() != null ? transaction.getToAccount().getId() : null)
                 .build();
     }
 

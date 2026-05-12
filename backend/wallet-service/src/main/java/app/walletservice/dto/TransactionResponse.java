@@ -24,4 +24,6 @@ public class TransactionResponse {
     private String description;
     private String reference;
     private LocalDateTime createdAt;
+    private UUID fromAccountId;
+    private UUID toAccountId;
 }

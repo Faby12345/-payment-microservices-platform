@@ -6,14 +6,20 @@ import app.walletservice.entity.Account;
 import app.walletservice.entity.TransactionHold;
 import app.walletservice.event.TransferCreatedEvent;
 import app.walletservice.event.TransferType;
+import app.walletservice.entity.TransactionStatus;
+import app.walletservice.entity.TransactionType;
 import app.walletservice.mapper.TransactionMapper;
 import app.walletservice.repository.AccountRepository;
 import app.walletservice.repository.TransactionRepository;
+import app.walletservice.repository.TransactionSpecification;
 import app.walletservice.service.interfaces.ITransactionService;
 import app.walletservice.service.interfaces.IWalletService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,9 +38,22 @@ public class TransactionServiceImpl implements ITransactionService {
 
     @Override
     public List<TransactionResponse> getTransactionsByUserId(UUID userId) {
+        Specification<app.walletservice.entity.Transaction> spec = TransactionSpecification.hasUserId(userId);
         return transactionMapper.toResponseList(
-                transactionRepository.findByFromAccountWalletUserIdOrToAccountWalletUserIdOrderByCreatedAtDesc(userId, userId)
+                transactionRepository.findAll(spec)
         );
+    }
+
+    @Override
+    public Page<TransactionResponse> getTransactionsByUserId(UUID userId, TransactionType type, TransactionStatus status, Pageable pageable) {
+        Specification<app.walletservice.entity.Transaction> spec = Specification.allOf(
+                TransactionSpecification.hasUserId(userId),
+                TransactionSpecification.hasType(type),
+                TransactionSpecification.hasStatus(status)
+        );
+
+        return transactionRepository.findAll(spec, pageable)
+                .map(transactionMapper::toResponse);
     }
 
     @Transactional

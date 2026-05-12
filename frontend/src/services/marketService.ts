@@ -24,5 +24,10 @@ export const marketService = {
     getHistoryByDate: async (date: string): Promise<ExchangeRateHistoryResponse[]> => {
         const response = await transferApi.get<ExchangeRateHistoryResponse[]>(`/api/v1/exchange-rates/history/${date}`);
         return response.data;
+    },
+
+    getHistoryForPair: async (base: string, target: string): Promise<ExchangeRateHistoryResponse[]> => {
+        const response = await transferApi.get<ExchangeRateHistoryResponse[]>(`/api/v1/exchange-rates/history/${base}/${target}`);
+        return response.data;
     }
 };

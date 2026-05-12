@@ -143,6 +143,14 @@ public class BnrExchangeRateService implements IExchangeRateService {
     }
 
     @Override
+    public List<ExchangeRateHistory> getHistoryForPair(String baseCurrency, String targetCurrency) {
+        return historyRepository.findByBaseCurrencyAndTargetCurrencyOrderByRateDateDesc(
+                baseCurrency.toUpperCase(), 
+                targetCurrency.toUpperCase()
+        );
+    }
+
+    @Override
     @Transactional
     public void updateRate(String base, String target, BigDecimal rate) {
         updateMasterRate(base, target, rate);
