@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
-    IconPlus, 
+    IconPlus,
     IconExchange, 
     IconSend,
     IconChartBar
@@ -8,7 +8,7 @@ import {
 import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { type TransactionResponse, type WalletResponse } from '../../types/wallet.types';
-import { AddAccount } from '../../components/ui/AddAccount/AddAccount';
+
 interface OverviewPageProps {
     totalBalance: number;
     transactions: TransactionResponse[];
@@ -35,7 +35,6 @@ const QuickAction: React.FC<{ icon: React.ReactNode; label: string; onClick?: ()
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transactions, wallet, selectedAccountId, onRefresh }) => {
     const navigate = useNavigate();
-    const [showAddAccount, setShowAddAccount] = useState(false);
 
     // Filter data based on selected account
     const selectedAccount = wallet?.accounts.find(a => a.id === selectedAccountId);
@@ -52,20 +51,6 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
 
     return (
         <div className="space-y-6 animate-fade-in relative">
-            {/* Modal Overlay for Add Account */}
-
-            {showAddAccount && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-brand-bg)]/80 backdrop-blur-md">
-                    <div className="w-full max-w-md">
-                        <AddAccount 
-                            walletId={wallet?.id || ''} 
-                            onClose={() => setShowAddAccount(false)} 
-                            onRefresh={onRefresh} 
-                        />
-                    </div>
-                </div>
-            )}
-
             {/* --- Balance Hero Section --- */}
             <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-b from-[var(--color-brand-accent)]/20 to-transparent p-8 md:p-10 text-center border border-white/5 shadow-2xl">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-[var(--color-brand-accent)]/30 blur-[80px] rounded-full -z-10 animate-pulse" />
@@ -93,7 +78,6 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ totalBalance, transa
                     <QuickAction 
                         icon={<IconPlus className="w-5 h-5" />} 
                         label="Add" 
-                        onClick={() => setShowAddAccount(true)}
                     />
                     <QuickAction 
                         icon={<IconSend className="w-5 h-5" />} 

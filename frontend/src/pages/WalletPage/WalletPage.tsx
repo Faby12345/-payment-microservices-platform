@@ -13,7 +13,7 @@ import {
 import { DashboardLayout } from '../../layouts/DashboardLayout';
 import { OverviewPage } from '../OverviewPage/OverviewPage';
 import { PaymentsPage } from '../PaymentsPage/PaymentsPage';
-import { CardsPage } from '../CardsPage/CardsPage';
+import { MarketsPage } from '../MarketsPage/MarketsPage';
 import { StatsPage } from '../StatsPage/StatsPage';
 import { HubPage } from '../HubPage/HubPage';
 
@@ -25,6 +25,7 @@ export const WalletPage: React.FC = () => {
     const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+    const [showAddAccount, setShowAddAccount] = useState(false);
 
     const fetchDashboardData = useCallback(async (showLoading = true) => {
         if (!user?.id) return;
@@ -65,9 +66,12 @@ export const WalletPage: React.FC = () => {
                     wallet={wallet} 
                     selectedAccountId={selectedAccountId}
                     onAccountSelect={setSelectedAccountId}
+                    onRefresh={() => fetchDashboardData(false)}
+                    showAddAccount={showAddAccount}
+                    setShowAddAccount={setShowAddAccount}
                 />
             }>
-                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route index element={<Navigate to="./dashboard" replace />} />
                 <Route path="dashboard" element={
                     <OverviewPage 
                         totalBalance={totalBalance} 
@@ -75,6 +79,7 @@ export const WalletPage: React.FC = () => {
                         wallet={wallet}
                         selectedAccountId={selectedAccountId}
                         onRefresh={() => fetchDashboardData(false)}
+                        onAddAccount={() => setShowAddAccount(true)}
                     />
                 } />
                 <Route path="payments" element={
@@ -84,12 +89,12 @@ export const WalletPage: React.FC = () => {
                         onRefresh={() => fetchDashboardData(false)} 
                     />
                 } />
-                <Route path="cards" element={<CardsPage />} />
+                <Route path="markets" element={<MarketsPage />} />
                 <Route path="stats" element={<StatsPage />} />
                 <Route path="hub" element={<HubPage />} />
                 
                 {/* Fallback */}
-                <Route path="*" element={<Navigate to="dashboard" replace />} />
+                <Route path="*" element={<Navigate to="./dashboard" replace />} />
             </Route>
         </Routes>
     );

@@ -2,31 +2,33 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { 
-    IconPlus, 
     IconSend, 
     IconHome, 
-    IconCreditCard, 
     IconChartBar, 
     IconGrid,
-    IconUser
+    IconUser,
+    IconPlus
 } from '../components/ui/Icons';
 import { cn } from '../utils/cn';
 import { type WalletResponse } from '../types/wallet.types';
+import {AddAccount} from "../components/ui/AddAccount/AddAccount.tsx";
 
 interface DashboardLayoutProps {
     wallet: WalletResponse | null;
     selectedAccountId: string | null;
     onAccountSelect: (id: string | null) => void;
+    onRefresh: () => void;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, selectedAccountId, onAccountSelect }) => {
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, selectedAccountId, onAccountSelect, onRefresh }) => {
     const { user, logout } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const navigate = useNavigate();
+    const [showAddAccount, setShowAddAccount] = useState(false)
 
     const navItems = [
         { id: 'home', path: '/dashboard', label: 'Home', icon: <IconHome /> },
-        { id: 'cards', path: '/cards', label: 'Cards', icon: <IconCreditCard /> },
+        { id: 'markets', path: '/markets', label: 'Markets', icon: <IconChartBar /> },
         { id: 'payments', path: '/payments', label: 'Payments', icon: <IconSend /> },
         { id: 'stats', path: '/stats', label: 'Stats', icon: <IconChartBar /> },
         { id: 'hub', path: '/hub', label: 'Hub', icon: <IconGrid /> },
@@ -40,6 +42,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
     return (
         <div className="min-h-screen bg-[var(--color-brand-bg)] text-white flex overflow-hidden relative">
             
+            {/* Modal Overlay for Add Account */}
+            {showAddAccount && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[var(--color-brand-bg)]/80 backdrop-blur-md">
+                    <div className="w-full max-w-md">
+                        <AddAccount 
+                            walletId={wallet?.id || ''} 
+                            onClose={() => setShowAddAccount(false)} 
+                            onRefresh={onRefresh} 
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Backdrop Overlay (Mobile only) */}
             <div 
                 className={cn(
@@ -75,6 +90,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
                         <NavLink
                             key={item.id}
                             to={item.path}
+                            end={item.path === '/dashboard'}
                             onClick={() => {
                                 if(window.innerWidth < 1024) setIsSidebarOpen(false);
                             }}
@@ -192,8 +208,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
                                 </div>
                             </button>
                         ))}
+                        
                         <button 
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => setShowAddAccount(true)}
                             className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-dashed border-white/20 text-[var(--color-brand-secondary)] hover:text-white transition-all bg-transparent"
                         >
                             <IconPlus className="w-4 h-4" />
