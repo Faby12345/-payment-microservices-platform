@@ -7,7 +7,8 @@ import {
 } from '../../services/walletService';
 import { 
     type WalletResponse, 
-    type TransactionResponse 
+    type TransactionResponse,
+    type PaginatedResponse
 } from '../../types/wallet.types';
 
 import { DashboardLayout } from '../../layouts/DashboardLayout';
@@ -22,32 +23,54 @@ export const WalletPage: React.FC = () => {
     
     // Data State
     const [wallet, setWallet] = useState<WalletResponse | null>(null);
-    const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
+    const [transactionsPage, setTransactionsPage] = useState<PaginatedResponse<TransactionResponse> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
     const [showAddAccount, setShowAddAccount] = useState(false);
+    
+    // Pagination & Filter State
+    const [currentPage, setCurrentPage] = useState(0);
+    const [filterType, setFilterType] = useState('ALL');
+    const [filterStatus, setFilterStatus] = useState('ALL');
 
     const fetchDashboardData = useCallback(async (showLoading = true) => {
         if (!user?.id) return;
         
         try {
             if (showLoading) setIsLoading(true);
-            const [walletData, txData] = await Promise.all([
+            const [walletData, txPage] = await Promise.all([
                 getWalletData(user.id),
-                getTransactionHistory(user.id)
+                getTransactionHistory(user.id, currentPage, 10, filterType, filterStatus)
             ]);
             setWallet(walletData);
-            setTransactions(txData);
+            setTransactionsPage(txPage);
         } catch (error) {
             console.error("Failed to load dashboard data:", error);
         } finally {
             if (showLoading) setIsLoading(false);
         }
-    }, [user?.id]);
+    }, [user?.id, currentPage, filterType, filterStatus]);
 
     useEffect(() => {
         fetchDashboardData(true);
     }, [fetchDashboardData]);
+
+    const handleRefresh = (page?: number, type?: string, status?: string) => {
+        if (page !== undefined) setCurrentPage(page);
+        if (type !== undefined) {
+            setFilterType(type);
+            setCurrentPage(0); // Reset to first page on filter change
+        }
+        if (status !== undefined) {
+            setFilterStatus(status);
+            setCurrentPage(0); // Reset to first page on filter change
+        }
+        
+        // Manual refresh (e.g. after adding account)
+        if (page === undefined && type === undefined && status === undefined) {
+            fetchDashboardData(false);
+        }
+    };
 
     const totalBalance = wallet?.accounts.reduce((acc, curr) => acc + curr.balance, 0) || 0;
 
@@ -66,7 +89,7 @@ export const WalletPage: React.FC = () => {
                     wallet={wallet} 
                     selectedAccountId={selectedAccountId}
                     onAccountSelect={setSelectedAccountId}
-                    onRefresh={() => fetchDashboardData(false)}
+                    onRefresh={() => handleRefresh()}
                     showAddAccount={showAddAccount}
                     setShowAddAccount={setShowAddAccount}
                 />
@@ -75,18 +98,20 @@ export const WalletPage: React.FC = () => {
                 <Route path="dashboard" element={
                     <OverviewPage 
                         totalBalance={totalBalance} 
-                        transactions={transactions} 
+                        transactionsPage={transactionsPage} 
                         wallet={wallet}
                         selectedAccountId={selectedAccountId}
-                        onRefresh={() => fetchDashboardData(false)}
+                        onRefresh={handleRefresh}
                         onAddAccount={() => setShowAddAccount(true)}
+                        filterType={filterType}
+                        filterStatus={filterStatus}
                     />
                 } />
                 <Route path="payments" element={
                     <PaymentsPage 
                         wallet={wallet} 
                         totalBalance={totalBalance} 
-                        onRefresh={() => fetchDashboardData(false)} 
+                        onRefresh={() => handleRefresh()} 
                     />
                 } />
                 <Route path="markets" element={<MarketsPage />} />

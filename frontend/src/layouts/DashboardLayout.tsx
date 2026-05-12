@@ -131,7 +131,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-                <header className="p-4 flex items-center justify-between sticky top-0 z-30 bg-[var(--color-brand-bg)]/80 backdrop-blur-xl border-b border-white/5">
+                <header className="h-[72px] p-4 flex items-center justify-between sticky top-0 z-30 bg-[var(--color-brand-bg)]/80 backdrop-blur-xl border-b border-white/5">
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}

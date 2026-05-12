@@ -29,4 +29,18 @@ export interface TransactionResponse {
     description: string;
     reference: string;
     createdAt: string; // ISO Date String
+    fromAccountId?: string;
+    toAccountId?: string;
+}
+
+export interface PaginatedResponse<T> {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+    first: boolean;
+    last: boolean;
+    numberOfElements: number;
+    empty: boolean;
 }
