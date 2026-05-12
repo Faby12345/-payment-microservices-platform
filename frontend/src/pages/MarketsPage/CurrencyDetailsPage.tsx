@@ -112,10 +112,30 @@ export const CurrencyDetailsPage: React.FC = () => {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <DetailStatCard title="Current Rate" value={stats.current.toFixed(4)} subtitle="Latest BNR" />
-                <DetailStatCard title="All-time High" value={stats.max.toFixed(4)} subtitle="Historical Peak" />
-                <DetailStatCard title="All-time Low" value={stats.min.toFixed(4)} subtitle="Historical Bottom" />
-                <DetailStatCard title="Volatility" value={`${stats.volatility.toFixed(2)}%`} subtitle="Range intensity" />
+                <DetailStatCard 
+                    title="Current Rate" 
+                    value={stats.current.toFixed(4)} 
+                    subtitle="Latest BNR" 
+                    color="emerald"
+                />
+                <DetailStatCard 
+                    title="All-time High" 
+                    value={stats.max.toFixed(4)} 
+                    subtitle="Historical Peak" 
+                    color="amber"
+                />
+                <DetailStatCard 
+                    title="All-time Low" 
+                    value={stats.min.toFixed(4)} 
+                    subtitle="Historical Bottom" 
+                    color="red"
+                />
+                <DetailStatCard 
+                    title="Volatility" 
+                    value={`${stats.volatility.toFixed(2)}%`} 
+                    subtitle="Range intensity" 
+                    color="blue"
+                />
             </div>
 
             {/* Large Interactive Chart */}
@@ -187,10 +207,22 @@ export const CurrencyDetailsPage: React.FC = () => {
     );
 };
 
-const DetailStatCard: React.FC<{ title: string, value: string, subtitle: string }> = ({ title, value, subtitle }) => (
-    <div className="glass-card rounded-3xl p-6 border border-white/5 space-y-1">
-        <p className="text-[10px] font-black text-[var(--color-brand-secondary)] uppercase tracking-widest">{title}</p>
-        <p className="text-2xl font-black tabular-nums">{value}</p>
-        <p className="text-[10px] text-[var(--color-brand-secondary)] font-medium italic opacity-50">{subtitle}</p>
+const DetailStatCard: React.FC<{ title: string, value: string, subtitle: string, color: 'emerald' | 'amber' | 'red' | 'blue' }> = ({ title, value, subtitle, color }) => (
+    <div className={cn(
+        "glass-card rounded-[1.5rem] md:rounded-3xl p-5 md:p-6 border transition-all duration-300 hover:scale-[1.02]",
+        color === 'emerald' ? "border-emerald-500/10 bg-emerald-500/[0.02]" :
+        color === 'amber' ? "border-amber-500/10 bg-amber-500/[0.02]" :
+        color === 'red' ? "border-red-500/10 bg-red-500/[0.02]" :
+        "border-blue-500/10 bg-blue-500/[0.02]"
+    )}>
+        <p className={cn(
+            "text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-1",
+            color === 'emerald' ? "text-emerald-400/60" :
+            color === 'amber' ? "text-amber-400/60" :
+            color === 'red' ? "text-red-400/60" :
+            "text-blue-400/60"
+        )}>{title}</p>
+        <p className="text-xl md:text-2xl font-black tabular-nums tracking-tight">{value}</p>
+        <p className="text-[9px] md:text-[10px] text-[var(--color-brand-secondary)] font-medium opacity-40 mt-1">{subtitle}</p>
     </div>
 );

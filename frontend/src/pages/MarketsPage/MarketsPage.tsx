@@ -9,7 +9,7 @@ import {
     IconGrid
 } from '../../components/ui/Icons';
 import { cn } from '../../utils/cn';
-import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, YAxis, XAxis } from 'recharts';
 
 const CurrencyChart: React.FC<{ base: string, target: string }> = ({ base, target }) => {
     const [history, setHistory] = useState<ExchangeRateHistoryResponse[]>([]);
@@ -49,14 +49,15 @@ const CurrencyChart: React.FC<{ base: string, target: string }> = ({ base, targe
 
     return (
         <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                 <defs>
                     <linearGradient id={`grad-${target}`} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={isUp ? "#10b981" : "#ef4444"} stopOpacity={0.3}/>
                         <stop offset="95%" stopColor={isUp ? "#10b981" : "#ef4444"} stopOpacity={0}/>
                     </linearGradient>
                 </defs>
-                <YAxis hide domain={['auto', 'auto']} />
+                <XAxis dataKey="rateDate" hide />
+                <YAxis hide domain={['dataMin - 0.001', 'dataMax + 0.001']} />
                 <Area 
                     type="monotone" 
                     dataKey="rate" 
@@ -65,6 +66,7 @@ const CurrencyChart: React.FC<{ base: string, target: string }> = ({ base, targe
                     fillOpacity={1} 
                     fill={`url(#grad-${target})`}
                     isAnimationActive={false}
+                    connectNulls
                 />
             </AreaChart>
         </ResponsiveContainer>
@@ -143,46 +145,46 @@ export const MarketsPage: React.FC = () => {
             </header>
 
             {/* --- Featured Rates Grid --- */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {isLoading ? (
-                    [1,2,3].map(i => <div key={i} className="h-40 md:h-48 rounded-[2rem] md:rounded-[2.5rem] glass-card animate-pulse" />)
+                    [1,2,3].map(i => <div key={i} className="h-32 md:h-48 rounded-[1.5rem] md:rounded-[2.5rem] glass-card animate-pulse" />)
                 ) : (
                     featuredRates.map((rate) => (
                         <div key={rate.targetCurrency} 
                              onClick={() => navigate(`./${rate.targetCurrency}`)}
-                             className="relative group p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] glass-card border border-white/10 hover:border-[var(--color-brand-accent)]/40 transition-all duration-500 overflow-hidden shadow-2xl cursor-pointer">
-                            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 md:w-40 md:h-40 bg-[var(--color-brand-accent)]/10 blur-[50px] md:blur-[60px] rounded-full group-hover:bg-[var(--color-brand-accent)]/20 transition-colors" />
+                             className="relative group p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] glass-card border border-white/10 hover:border-[var(--color-brand-accent)]/40 transition-all duration-500 overflow-hidden shadow-2xl cursor-pointer">
+                            <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 md:w-40 md:h-40 bg-[var(--color-brand-accent)]/10 blur-[40px] md:blur-[60px] rounded-full group-hover:bg-[var(--color-brand-accent)]/20 transition-colors" />
                             
                             <div className="flex justify-between items-start relative z-10">
-                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/5 flex items-center justify-center text-2xl md:text-3xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/5 flex items-center justify-center text-xl md:text-3xl shadow-inner group-hover:scale-110 transition-transform duration-500">
                                     {getFlag(rate.targetCurrency)}
                                 </div>
                                 <div className="text-right">
-                                    <span className="block text-xl md:text-2xl font-black tracking-tight">{rate.targetCurrency}</span>
-                                    <span className="text-[9px] md:text-[10px] font-black text-[var(--color-brand-secondary)] uppercase tracking-widest">Target</span>
+                                    <span className="block text-lg md:text-2xl font-black tracking-tight">{rate.targetCurrency}</span>
+                                    <span className="text-[8px] md:text-[10px] font-black text-[var(--color-brand-secondary)] uppercase tracking-widest">Target</span>
                                 </div>
                             </div>
 
                             {/* Chart Integration for Featured Cards */}
-                            <div className="mt-4 h-16 w-full relative z-10">
+                            <div className="mt-3 md:mt-4 h-10 md:h-16 w-full relative z-10">
                                 <CurrencyChart base={rate.baseCurrency} target={rate.targetCurrency} />
                             </div>
 
-                            <div className="mt-4 md:mt-6 relative z-10">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl md:text-4xl font-black tracking-tighter tabular-nums">
+                            <div className="mt-3 md:mt-6 relative z-10">
+                                <div className="flex items-baseline gap-1 md:gap-2">
+                                    <span className="text-2xl md:text-4xl font-black tracking-tighter tabular-nums">
                                         {rate.rate.toFixed(4)}
                                     </span>
-                                    <span className="text-xs font-bold text-[var(--color-brand-secondary)]">RON</span>
+                                    <span className="text-[10px] md:text-xs font-bold text-[var(--color-brand-secondary)]">RON</span>
                                 </div>
-                                <div className="mt-3 md:mt-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-green-400 text-[9px] md:text-[10px] font-black uppercase tracking-tighter">
-                                        <IconArrowUp className="w-3 h-3" />
+                                <div className="mt-2 md:mt-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5 text-green-400 text-[8px] md:text-[10px] font-black uppercase tracking-tighter">
+                                        <IconArrowUp className="w-2.5 h-2.5" />
                                         <span>Market Open</span>
                                     </div>
-                                    <span className="text-[10px] font-black text-[var(--color-brand-accent)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                    <span className="text-[8px] md:text-[10px] font-black text-[var(--color-brand-accent)] opacity-60 md:opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                         Details 
-                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                                         </svg>
                                     </span>
@@ -228,7 +230,7 @@ export const MarketsPage: React.FC = () => {
 
                                     <div className="flex items-center gap-4 md:gap-8 flex-1 justify-end">
                                         {/* Chart Integration for List Items */}
-                                        <div className="hidden sm:block w-24 md:w-40 h-10 md:h-12">
+                                        <div className="w-16 sm:w-24 md:w-40 h-8 md:h-12">
                                             <CurrencyChart base={rate.baseCurrency} target={rate.targetCurrency} />
                                         </div>
 
