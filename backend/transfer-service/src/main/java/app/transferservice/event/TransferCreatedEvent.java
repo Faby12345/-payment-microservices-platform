@@ -10,9 +10,14 @@ import java.util.UUID;
 public record TransferCreatedEvent(
     UUID transferId,
     UUID fromAccountId,
-    BigDecimal amount,
-    BigDecimal totalDeducted, // Total amount to be taken from sender (including fees)
-    String currency,
+    BigDecimal sourceAmount,
+    String sourceCurrency,
+    BigDecimal targetAmount,
+    String targetCurrency,
+    BigDecimal feeAmount,
+    String feeCurrency,
+    BigDecimal totalDebited,
+    BigDecimal exchangeRate,
     TransferType type,
     String recipientIdentifier,
     String description

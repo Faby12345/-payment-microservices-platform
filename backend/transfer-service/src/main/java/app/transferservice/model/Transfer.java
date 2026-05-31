@@ -30,6 +30,18 @@ public class Transfer extends BaseEntity {
     @Column(nullable = false, length = 3)
     private String currency;
 
+    @Column(nullable = false)
+    private BigDecimal sourceAmount;
+
+    @Column(nullable = false, length = 3)
+    private String sourceCurrency;
+
+    @Column(nullable = false)
+    private BigDecimal targetAmount;
+
+    @Column(nullable = false, length = 3)
+    private String targetCurrency;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransferType type;
@@ -39,6 +51,14 @@ public class Transfer extends BaseEntity {
     private TransactionStatus status;
 
     private BigDecimal fee;
+
+    @Column(length = 3)
+    private String feeCurrency;
+
+    private BigDecimal totalDebited;
+
+    @Column(precision = 18, scale = 6)
+    private BigDecimal exchangeRate;
 
     // Internal Transfer Info
     private String recipientIdentifier;

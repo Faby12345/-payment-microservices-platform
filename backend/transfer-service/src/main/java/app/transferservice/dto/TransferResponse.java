@@ -14,6 +14,11 @@ public record TransferResponse(
     BigDecimal fee,
     BigDecimal totalDeducted,
     String currency,
+    BigDecimal sourceAmount,
+    String sourceCurrency,
+    BigDecimal targetAmount,
+    String targetCurrency,
+    BigDecimal exchangeRate,
     LocalDateTime timestamp,
     String message,
     String estimatedDelivery

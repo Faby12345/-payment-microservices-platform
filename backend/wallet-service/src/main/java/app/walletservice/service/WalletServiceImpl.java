@@ -81,6 +81,12 @@ public class WalletServiceImpl implements IWalletService {
                 .orElseThrow(() -> new RuntimeException("Account not found with id: " + accountId));
     }
 
+    @Override
+    public Account getAccountByIban(String iban) {
+        return accountRepository.findByIban(iban)
+                .orElseThrow(() -> new RuntimeException("Account not found with IBAN: " + iban));
+    }
+
     @Transactional
     @Override
     public TransactionHold reserveFunds(UUID accountId, BigDecimal amount,

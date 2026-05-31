@@ -90,50 +90,74 @@ public class TransactionServiceImpl implements ITransactionService {
     @Override
     @Transactional
     public void processTransferFromEvent(TransferCreatedEvent event) {
-        log.info("Processing transfer event: ID={}, FromAccount={}, Recipient={}, TotalDeducted={}", 
-                event.transferId(), event.fromAccountId(), event.recipientIdentifier(), event.totalDeducted());
+        log.info("Processing transfer event: ID={}, FromAccount={}, Recipient={}, TotalDebited={}",
+                event.transferId(), event.fromAccountId(), event.recipientIdentifier(), event.totalDebited());
 
-        /// 1. DEBIT THE SENDER (Total amount including fees)
-        TransactionHold hold = walletService.reserveFunds(
-                event.fromAccountId(),
-                event.totalDeducted(),         // Use totalDeducted for the sender
-                event.currency(),
-                event.transferId().toString(), 
-                event.description(),           
-                event.transferId().toString()  
-        );
+        if (event.sourceCurrency().equalsIgnoreCase(event.targetCurrency())) {
+            processSingleCurrencyTransfer(event);
+        } else {
+            processMultiCurrencyTransfer(event);
+        }
+    }
+
+    private void processSingleCurrencyTransfer(TransferCreatedEvent event) {
+        TransactionHold hold = debitSender(event);
 
         try {
-            //  Settle the hold (Takes money from Sender)
             walletService.settleHold(hold.getId());
+            creditInternalRecipient(event);
+        } catch (Exception e) {
+            log.error("Failed to process same-currency transfer event {}: {}", event.transferId(), e.getMessage());
+            throw e;
+        }
+    }
 
-            /// 2. RESOLVE THE RECIPIENT
-            Optional<Account> toAccountOpt = accountRepository.findByIban(event.recipientIdentifier());
+    private void processMultiCurrencyTransfer(TransferCreatedEvent event) {
+        TransactionHold hold = debitSender(event);
 
-            if (toAccountOpt.isPresent()) {
-                log.info("Recipient IBAN {} found in-house. Processing internal credit of {}.", 
-                        event.recipientIdentifier(), event.amount());
-                
-                // Credit the recipient only the base amount (fees stay with the bank)
-                walletService.creditAccount(
-                        toAccountOpt.get().getId(),
-                        event.amount(),                // Use base amount for recipient
-                        event.currency(),
-                        event.transferId().toString() + "_credit", 
-                        event.description(),                      
-                        event.transferId().toString() + "_credit"  
-                );
-            } else if (event.type() == TransferType.INTERNAL) {
-                log.error("Internal transfer failed: No account found for IBAN {}", event.recipientIdentifier());
-                throw new RuntimeException("Internal recipient account not found!");
-            } else {
-                log.info("Real external transfer to IBAN: {}. Debit complete.", event.recipientIdentifier());
-            }
+        try {
+            walletService.settleHold(hold.getId());
+            creditInternalRecipient(event);
+        } catch (Exception e) {
+            log.error("Failed to process multi-currency transfer event {}: {}", event.transferId(), e.getMessage());
+            throw e;
+        }
+    }
 
-        }  catch (Exception e) {
-            log.error("Failed to process transfer event {}: {}", event.transferId(), e.getMessage());
-            // Note: If we throw here, the transaction rolls back, including settleHold
-            throw e; 
+    private TransactionHold debitSender(TransferCreatedEvent event) {
+        TransactionHold hold = walletService.reserveFunds(
+                event.fromAccountId(),
+                event.totalDebited(),
+                event.sourceCurrency(),
+                event.transferId().toString(),
+                event.description(),
+                event.transferId().toString()
+        );
+
+        return hold;
+    }
+
+    private void creditInternalRecipient(TransferCreatedEvent event) {
+        Optional<Account> toAccountOpt = accountRepository.findByIban(event.recipientIdentifier());
+
+        if (toAccountOpt.isPresent()) {
+            Account recipient = toAccountOpt.get();
+            log.info("Recipient IBAN {} found in-house. Crediting {} {}.",
+                    event.recipientIdentifier(), event.targetAmount(), event.targetCurrency());
+
+            walletService.creditAccount(
+                    recipient.getId(),
+                    event.targetAmount(),
+                    event.targetCurrency(),
+                    event.transferId().toString() + "_credit",
+                    event.description(),
+                    event.transferId().toString() + "_credit"
+            );
+        } else if (event.type() == TransferType.INTERNAL) {
+            log.error("Internal transfer failed: No account found for IBAN {}", event.recipientIdentifier());
+            throw new RuntimeException("Internal recipient account not found!");
+        } else {
+            log.info("Real external transfer to IBAN: {}. Debit complete.", event.recipientIdentifier());
         }
     }
 }
