@@ -34,7 +34,7 @@ class WalletControllerTest {
     private WalletRepository walletRepository;
 
     @Test
-    void shouldCreateWalletWithDefaultAccount() throws Exception {
+    void shouldCreateWalletWithDefaultAccount() throws Exception{
         // Given
         UUID userId = UUID.randomUUID();
         CreateWalletRequest request = new CreateWalletRequest(userId, "EUR");
@@ -60,6 +60,7 @@ class WalletControllerTest {
         UUID userId = UUID.randomUUID();
         app.walletservice.entity.Wallet wallet = new app.walletservice.entity.Wallet(userId, app.walletservice.entity.WalletStatus.ACTIVE);
         app.walletservice.entity.Account account = new app.walletservice.entity.Account("USD", wallet);
+        account.setIban("RO99PAYM1234567890");
         wallet.addAccount(account);
         walletRepository.save(wallet);
 

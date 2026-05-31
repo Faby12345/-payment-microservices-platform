@@ -3,10 +3,12 @@ package app.transferservice.client;
 import app.transferservice.dto.AccountResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -27,6 +29,30 @@ public class WalletClient {
         } catch (Exception e) {
             log.error("Failed to fetch account details from Wallet Service: {}", e.getMessage());
             throw new RuntimeException("Could not verify source account details. Please try again later.");
+        }
+    }
+
+    public AccountResponse getAccountByIban(String iban) {
+        String url = String.format("%s/api/v1/wallets/accounts/iban/%s", walletServiceUrl, iban);
+        log.info("Calling Wallet Service to get account by IBAN: {}", url);
+        try {
+            return restTemplate.getForObject(url, AccountResponse.class);
+        } catch (Exception e) {
+            log.error("Failed to fetch account by IBAN from Wallet Service: {}", e.getMessage());
+            throw new RuntimeException("Could not verify recipient account details. Please try again later.");
+        }
+    }
+
+    public Optional<AccountResponse> findAccountByIban(String iban) {
+        String url = String.format("%s/api/v1/wallets/accounts/iban/%s", walletServiceUrl, iban);
+        log.info("Calling Wallet Service to find account by IBAN: {}", url);
+        try {
+            return Optional.ofNullable(restTemplate.getForObject(url, AccountResponse.class));
+        } catch (HttpClientErrorException.NotFound e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("Failed to find account by IBAN from Wallet Service: {}", e.getMessage());
+            throw new RuntimeException("Could not verify recipient account details. Please try again later.");
         }
     }
 }

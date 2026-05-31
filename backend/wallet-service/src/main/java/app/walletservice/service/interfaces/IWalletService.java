@@ -21,6 +21,8 @@ public interface IWalletService {
 
     Account getAccountById(UUID accountId);
 
+    Account getAccountByIban(String iban);
+
     TransactionHold reserveFunds(UUID accountId, BigDecimal amount, String currency, String reference, String description, String idempotencyKey);
 
     void settleHold(UUID holdId);

@@ -99,17 +99,16 @@ public class BnrExchangeRateService implements IExchangeRateService {
                     value = value.divide(BigDecimal.valueOf(multiplier), 6, RoundingMode.HALF_UP);
                 }
 
-                // Update current master rates (Base: RON)
-                updateMasterRate(BASE_CURRENCY, currency, value);
-                
-                // Inverse rate
+                // BNR publishes rates as 1 foreign currency = value RON.
+                updateMasterRate(currency, BASE_CURRENCY, value);
+
                 BigDecimal inverseValue = BigDecimal.ONE.divide(value, 6, RoundingMode.HALF_UP);
-                updateMasterRate(currency, BASE_CURRENCY, inverseValue);
+                updateMasterRate(BASE_CURRENCY, currency, inverseValue);
 
                 // Add to history
                 historyList.add(ExchangeRateHistory.builder()
-                        .baseCurrency(BASE_CURRENCY)
-                        .targetCurrency(currency)
+                        .baseCurrency(currency)
+                        .targetCurrency(BASE_CURRENCY)
                         .rate(value)
                         .rateDate(rateDate)
                         .build());

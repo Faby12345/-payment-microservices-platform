@@ -45,6 +45,12 @@ public class WalletController {
         return ResponseEntity.ok(walletMapper.toAccountResponse(account));
     }
 
+    @GetMapping("/accounts/iban/{iban}")
+    public ResponseEntity<AccountResponse> getAccountByIban(@PathVariable String iban) {
+        Account account = walletService.getAccountByIban(iban);
+        return ResponseEntity.ok(walletMapper.toAccountResponse(account));
+    }
+
     @PostMapping("/{walletId}/accounts")
     public ResponseEntity<AccountResponse> addAccount(
             @PathVariable UUID walletId,
