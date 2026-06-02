@@ -49,10 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
-      await loginUser(credentials);
-      const userProfile = await getCurrentUser();
-      setUser(userProfile);
-      return { user: userProfile };
+      const response = await loginUser(credentials);
+      setUser(response.user);
+      return { user: response.user };
     } catch (err) {
       const authError = err as AuthError;
       setError(authError);

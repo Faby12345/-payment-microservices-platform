@@ -4,6 +4,8 @@ import app.authservice.web.dto.error.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -42,15 +44,23 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("Session missing", List.of("Please log in again"), Instant.now()));
     }
 
+    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
+    public ResponseEntity<ErrorResponse> handleBadCredentials(Exception ex) {
+        log.warn("Login failed: bad credentials");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Authentication Failed", List.of("Invalid email or password"), Instant.now()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralExceptions(Exception ex) {
+        UUID referenceId = UUID.randomUUID();
         // 'error' level and include the exception object 'ex'
-        log.error("UNEXPECTED SYSTEM ERROR: ", ex);
+        log.error("UNEXPECTED SYSTEM ERROR referenceId={}: ", referenceId, ex);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse(
                         "An internal error occurred",
-                        List.of("Reference ID: " + UUID.randomUUID()), //give the user a ref ID
+                        List.of("Reference ID: " + referenceId), //give the user a ref ID
                         Instant.now()
                 ));
     }

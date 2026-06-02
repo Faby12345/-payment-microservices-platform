@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 ROOT="/Users/turlefabian/Desktop/payment-microservices-platform/backend"
-SERVICES=("auth-service" "wallet-service" "transfer-service")
+SERVICES=("auth-service" "wallet-service" "transfer-service" "ledger-service" "api-gateway")
 
 for service in "${SERVICES[@]}"; do
   pkill -f "$ROOT/$service/.*spring-boot:run" 2>/dev/null
@@ -10,7 +10,7 @@ done
 
 osascript <<EOF
 tell application "Terminal"
-  set serviceTitles to {"auth-service", "wallet-service", "transfer-service", "ledger-service"}
+  set serviceTitles to {"auth-service", "wallet-service", "transfer-service", "ledger-service", "api-gateway"}
   repeat with w in windows
     set shouldCloseWindow to false
     repeat with t in tabs of w

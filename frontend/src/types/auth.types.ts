@@ -30,6 +30,7 @@ export interface AuthResponse {
 }
 export interface LoginResponse {
   accessToken: string;
+  user: AuthUser;
 }
 
 export interface AuthError {

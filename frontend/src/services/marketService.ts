@@ -16,18 +16,17 @@ export interface ExchangeRateHistoryResponse {
 
 export const marketService = {
     getCurrentRates: async (): Promise<ExchangeRateResponse[]> => {
-        // Using transferApi which points to http://localhost:8082 or similar
-        const response = await transferApi.get<ExchangeRateResponse[]>('/api/v1/exchange-rates/current');
+        const response = await transferApi.get<ExchangeRateResponse[]>('/exchange-rates/current');
         return response.data;
     },
 
     getHistoryByDate: async (date: string): Promise<ExchangeRateHistoryResponse[]> => {
-        const response = await transferApi.get<ExchangeRateHistoryResponse[]>(`/api/v1/exchange-rates/history/${date}`);
+        const response = await transferApi.get<ExchangeRateHistoryResponse[]>(`/exchange-rates/history/${date}`);
         return response.data;
     },
 
     getHistoryForPair: async (base: string, target: string): Promise<ExchangeRateHistoryResponse[]> => {
-        const response = await transferApi.get<ExchangeRateHistoryResponse[]>(`/api/v1/exchange-rates/history/${base}/${target}`);
+        const response = await transferApi.get<ExchangeRateHistoryResponse[]>(`/exchange-rates/history/${base}/${target}`);
         return response.data;
     }
 };
