@@ -33,7 +33,8 @@ export async function loginUser(credentials: LoginCredentials): Promise<LoginRes
     setAccessToken(data.accessToken)
 
     return {
-      accessToken: data.accessToken
+      accessToken: data.accessToken,
+      user: data.user
     };
   } catch (error: unknown){
 

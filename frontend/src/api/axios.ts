@@ -7,9 +7,10 @@ const getBaseUrl = (envUrl: string) => {
     return envUrl.replace('localhost', host).replace('127.0.0.1', host);
 };
 
-const AUTH_BASE_URL = getBaseUrl(import.meta.env.VITE_AUTH_API_BASE_URL);
-const WALLET_BASE_URL = getBaseUrl(import.meta.env.VITE_WALLET_API_BASE_URL);
-const TRANSFER_BASE_URL = getBaseUrl(import.meta.env.VITE_TRANSFER_API_BASE_URL || 'http://localhost:8082');
+const API_GATEWAY_BASE_URL = getBaseUrl(import.meta.env.VITE_API_GATEWAY_BASE_URL || 'http://localhost:8085/api/v1');
+const AUTH_BASE_URL = getBaseUrl(import.meta.env.VITE_AUTH_API_BASE_URL || API_GATEWAY_BASE_URL);
+const WALLET_BASE_URL = getBaseUrl(import.meta.env.VITE_WALLET_API_BASE_URL || API_GATEWAY_BASE_URL);
+const TRANSFER_BASE_URL = getBaseUrl(import.meta.env.VITE_TRANSFER_API_BASE_URL || API_GATEWAY_BASE_URL);
 // Token storage (Internal to this module)
 let accessToken: string | null = null;
 

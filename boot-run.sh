@@ -15,5 +15,5 @@ EOF
 open_service "auth-service"
 open_service "wallet-service"
 open_service "transfer-service"
-# open_service "ledger-service"
-# open_service "api-gateway"
+open_service "ledger-service"
+open_service "api-gateway"

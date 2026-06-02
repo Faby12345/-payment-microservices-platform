@@ -50,7 +50,10 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, springCookie.toString())
-                .body(new AuthSuccessResponse(tokenData.accessToken()));
+                .body(new AuthSuccessResponse(
+                        tokenData.accessToken(),
+                        authService.getUserProfile(dto.email())
+                ));
     }
 
     @PostMapping("/refresh")
@@ -59,7 +62,7 @@ public class AuthController {
     {
         TokenResponseDto tokenData = authService.generateAccessToken(refreshToken);
         return ResponseEntity.ok()
-                .body(new AuthSuccessResponse(tokenData.accessToken()));
+                .body(new AuthSuccessResponse(tokenData.accessToken(), null));
 
     }
 
