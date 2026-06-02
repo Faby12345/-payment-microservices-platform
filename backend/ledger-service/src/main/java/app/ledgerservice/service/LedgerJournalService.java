@@ -1,9 +1,13 @@
 package app.ledgerservice.service;
 
+import app.ledgerservice.dto.LedgerJournalResponseDto;
+import app.ledgerservice.dto.LedgerJournalSearchRequest;
+import app.ledgerservice.mapper.LedgerDtoMapper;
 import app.ledgerservice.entity.LedgerEntry;
 import app.ledgerservice.entity.LedgerJournal;
 import app.ledgerservice.event.LedgerTransactionSettledEvent;
 import app.ledgerservice.repository.LedgerJournalRepository;
+import app.ledgerservice.repository.specification.LedgerJournalSpecification;
 import app.ledgerservice.service.interfaces.ILedgerEntryService;
 import app.ledgerservice.service.interfaces.ILedgerJournalService;
 import app.ledgerservice.types.LedgerEntryDirection;
@@ -12,7 +16,12 @@ import app.ledgerservice.types.LedgerJournalType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,6 +39,7 @@ public class LedgerJournalService implements ILedgerJournalService {
 
     private final LedgerJournalRepository ledgerJournalRepository;
     private final ILedgerEntryService ledgerEntryService;
+    private final LedgerDtoMapper ledgerDtoMapper;
 
     @Override
     public boolean existsBySourceEventId(String sourceEventId) {
@@ -70,6 +80,41 @@ public class LedgerJournalService implements ILedgerJournalService {
 
         log.info("Created ledger journal id={} for sourceEventId={}", savedJournal.getId(), sourceEventId);
         return savedJournal;
+    }
+
+    @Override
+    @Transactional
+    public Page<LedgerJournalResponseDto> getJournals(LedgerJournalSearchRequest request, Pageable pageable) {
+        return ledgerJournalRepository.findAll(LedgerJournalSpecification.by(request), pageable)
+                .map(ledgerDtoMapper::toJournalDto);
+    }
+
+    @Override
+    @Transactional
+    public Page<LedgerJournalResponseDto> getJournalsByTransferId(java.util.UUID transferId, Pageable pageable) {
+        LedgerJournalSearchRequest request = new LedgerJournalSearchRequest(
+                null,
+                null,
+                transferId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        return getJournals(request, pageable);
+    }
+
+    @Override
+    @Transactional
+    public LedgerJournalResponseDto getJournalById(java.util.UUID journalId) {
+        LedgerJournal journal = ledgerJournalRepository.findById(journalId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Ledger journal not found"));
+        return ledgerDtoMapper.toJournalDto(journal);
     }
 
     private void validateEvent(LedgerTransactionSettledEvent event) {

@@ -18,6 +18,7 @@ import { MarketsPage } from '../MarketsPage/MarketsPage';
 import { CurrencyDetailsPage } from '../MarketsPage/CurrencyDetailsPage';
 import { StatsPage } from '../StatsPage/StatsPage';
 import { HubPage } from '../HubPage/HubPage';
+import { LedgerPage } from '../LedgerPage/LedgerPage';
 
 export const WalletPage: React.FC = () => {
     const { user } = useAuth();
@@ -119,6 +120,7 @@ export const WalletPage: React.FC = () => {
                 <Route path="markets/:currency" element={<CurrencyDetailsPage />} />
                 <Route path="stats" element={<StatsPage />} />
                 <Route path="hub" element={<HubPage />} />
+                <Route path="ledger" element={<LedgerPage />} />
                 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="./dashboard" replace />} />

@@ -3,6 +3,7 @@ package app.ledgerservice.repository;
 import app.ledgerservice.entity.LedgerEntry;
 import app.ledgerservice.types.LedgerEntryDirection;
 import app.ledgerservice.types.LedgerEntryType;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, UUID> {
+public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, UUID>, JpaSpecificationExecutor<LedgerEntry> {
 
     List<LedgerEntry> findByJournalId(UUID journalId);
 

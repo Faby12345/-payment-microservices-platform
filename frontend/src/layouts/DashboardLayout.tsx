@@ -7,7 +7,8 @@ import {
     IconChartBar, 
     IconGrid,
     IconUser,
-    IconPlus
+    IconPlus,
+    IconCreditCard
 } from '../components/ui/Icons';
 import { cn } from '../utils/cn';
 import { type WalletResponse } from '../types/wallet.types';
@@ -25,6 +26,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const navigate = useNavigate();
     const [showAddAccount, setShowAddAccount] = useState(false)
+    const isAdmin = user?.roles?.some(role => role === 'ADMIN' || role === 'ROLE_ADMIN') || false;
 
     const navItems = [
         { id: 'home', path: '/dashboard', label: 'Home', icon: <IconHome /> },
@@ -32,6 +34,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ wallet, select
         { id: 'payments', path: '/payments', label: 'Payments', icon: <IconSend /> },
         { id: 'stats', path: '/stats', label: 'Stats', icon: <IconChartBar /> },
         { id: 'hub', path: '/hub', label: 'Hub', icon: <IconGrid /> },
+        ...(isAdmin ? [{ id: 'ledger', path: '/ledger', label: 'Ledger', icon: <IconCreditCard /> }] : []),
     ];
 
     const handleLogout = () => {
