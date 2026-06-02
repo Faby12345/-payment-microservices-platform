@@ -14,10 +14,17 @@ public class RabbitMQConfig {
     public static final String TRANSFER_EXCHANGE = "transfer.exchange";
     public static final String WALLET_TRANSFER_QUEUE = "wallet.transfer.queue";
     public static final String TRANSFER_CREATED_ROUTING_KEY = "transfer.created";
+    public static final String WALLET_EVENTS_EXCHANGE = "wallet.events.exchange";
+    public static final String TRANSACTION_SETTLED_ROUTING_KEY = "wallet.transaction.settled";
 
     @Bean
     public TopicExchange transferExchange() {
         return new TopicExchange(TRANSFER_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange walletEventsExchange() {
+        return new TopicExchange(WALLET_EVENTS_EXCHANGE);
     }
 
     @Bean

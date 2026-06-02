@@ -2,13 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { marketService, type ExchangeRateResponse, type ExchangeRateHistoryResponse } from '../../services/marketService';
 import { 
-    IconChartBar, 
     IconExchange, 
     IconArrowUp, 
-    IconArrowDown,
     IconGrid
 } from '../../components/ui/Icons';
-import { cn } from '../../utils/cn';
 import { AreaChart, Area, ResponsiveContainer, YAxis, XAxis } from 'recharts';
 
 const CurrencyChart: React.FC<{ base: string, target: string }> = ({ base, target }) => {
@@ -77,18 +74,16 @@ export const MarketsPage: React.FC = () => {
     const navigate = useNavigate();
     const [rates, setRates] = useState<ExchangeRateResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchRates = async () => {
             try {
                 setIsLoading(true);
                 const data = await marketService.getCurrentRates();
-                const ronBaseRates = data.filter(r => r.baseCurrency === 'RON');
-                setRates(ronBaseRates);
+                const ronTargetRates = data.filter(r => r.targetCurrency === 'RON');
+                setRates(ronTargetRates);
             } catch (err) {
                 console.error("Failed to fetch market rates:", err);
-                setError("Could not load market data.");
             } finally {
                 setIsLoading(false);
             }
@@ -114,8 +109,8 @@ export const MarketsPage: React.FC = () => {
     };
 
     const featuredCurrencies = ['EUR', 'USD', 'GBP'];
-    const featuredRates = rates.filter(r => featuredCurrencies.includes(r.targetCurrency));
-    const otherRates = rates.filter(r => !featuredCurrencies.includes(r.targetCurrency));
+    const featuredRates = rates.filter(r => featuredCurrencies.includes(r.baseCurrency));
+    const otherRates = rates.filter(r => !featuredCurrencies.includes(r.baseCurrency));
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 md:space-y-10 animate-fade-in pb-10 px-4">
@@ -150,18 +145,18 @@ export const MarketsPage: React.FC = () => {
                     [1,2,3].map(i => <div key={i} className="h-32 md:h-48 rounded-[1.5rem] md:rounded-[2.5rem] glass-card animate-pulse" />)
                 ) : (
                     featuredRates.map((rate) => (
-                        <div key={rate.targetCurrency} 
-                             onClick={() => navigate(`./${rate.targetCurrency}`)}
+                        <div key={rate.baseCurrency} 
+                             onClick={() => navigate(`./${rate.baseCurrency}`)}
                              className="relative group p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] glass-card border border-white/10 hover:border-[var(--color-brand-accent)]/40 transition-all duration-500 overflow-hidden shadow-2xl cursor-pointer">
                             <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 md:w-40 md:h-40 bg-[var(--color-brand-accent)]/10 blur-[40px] md:blur-[60px] rounded-full group-hover:bg-[var(--color-brand-accent)]/20 transition-colors" />
                             
                             <div className="flex justify-between items-start relative z-10">
                                 <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/5 flex items-center justify-center text-xl md:text-3xl shadow-inner group-hover:scale-110 transition-transform duration-500">
-                                    {getFlag(rate.targetCurrency)}
+                                    {getFlag(rate.baseCurrency)}
                                 </div>
                                 <div className="text-right">
-                                    <span className="block text-lg md:text-2xl font-black tracking-tight">{rate.targetCurrency}</span>
-                                    <span className="text-[8px] md:text-[10px] font-black text-[var(--color-brand-secondary)] uppercase tracking-widest">Target</span>
+                                    <span className="block text-lg md:text-2xl font-black tracking-tight">{rate.baseCurrency}</span>
+                                    <span className="text-[8px] md:text-[10px] font-black text-[var(--color-brand-secondary)] uppercase tracking-widest">Base</span>
                                 </div>
                             </div>
 
@@ -213,15 +208,15 @@ export const MarketsPage: React.FC = () => {
                             [1,2,3,4].map(i => <div key={i} className="h-16 md:h-20 animate-pulse bg-white/5" />)
                         ) : (
                             otherRates.map((rate) => (
-                                <div key={rate.targetCurrency} 
-                                     onClick={() => navigate(`./${rate.targetCurrency}`)}
+                                <div key={rate.baseCurrency} 
+                                     onClick={() => navigate(`./${rate.baseCurrency}`)}
                                      className="group flex items-center justify-between p-4 md:p-6 md:px-8 hover:bg-white/[0.03] transition-colors cursor-pointer">
                                     <div className="flex items-center gap-3 md:gap-5">
                                         <span className="text-2xl md:text-3xl group-hover:scale-125 transition-transform duration-300 drop-shadow-lg">
-                                            {getFlag(rate.targetCurrency)}
+                                            {getFlag(rate.baseCurrency)}
                                         </span>
                                         <div className="flex flex-col">
-                                            <span className="font-black text-sm md:text-base tracking-tight">{rate.targetCurrency}</span>
+                                            <span className="font-black text-sm md:text-base tracking-tight">{rate.baseCurrency}</span>
                                             <span className="hidden sm:block text-[8px] md:text-[10px] text-[var(--color-brand-secondary)] font-black uppercase tracking-widest">
                                                 Romanian Leu
                                             </span>

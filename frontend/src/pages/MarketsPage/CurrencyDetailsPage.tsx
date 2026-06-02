@@ -8,14 +8,9 @@ import {
     YAxis, 
     CartesianGrid, 
     Tooltip, 
-    ResponsiveContainer,
-    BarChart,
-    Bar
+    ResponsiveContainer
 } from 'recharts';
 import { 
-    IconArrowUp, 
-    IconArrowDown, 
-    IconExchange,
     IconChartBar
 } from '../../components/ui/Icons';
 import { cn } from '../../utils/cn';
@@ -31,7 +26,7 @@ export const CurrencyDetailsPage: React.FC = () => {
             if (!currency) return;
             try {
                 setIsLoading(true);
-                const data = await marketService.getHistoryForPair('RON', currency);
+                const data = await marketService.getHistoryForPair(currency, 'RON');
                 setHistory([...data].reverse());
             } catch (err) {
                 console.error("Failed to fetch currency details:", err);
@@ -97,7 +92,7 @@ export const CurrencyDetailsPage: React.FC = () => {
                     </button>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h2 className="text-3xl font-black tracking-tighter">RON / {currency}</h2>
+                            <h2 className="text-3xl font-black tracking-tighter">{currency} / RON</h2>
                             <span className={cn(
                                 "text-xs font-black px-2 py-1 rounded-lg",
                                 isUp ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"

@@ -42,6 +42,19 @@ services:
     volumes:
       - transfer_db_data:/var/lib/postgresql/data
 
+  ledger-db:
+    image: postgres:16-alpine
+    container_name: ledger-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ledger_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5436:5432"
+    volumes:
+      - ledger_db_data:/var/lib/postgresql/data
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
@@ -70,3 +83,4 @@ volumes:
   auth_db_data:
   wallet_db_data:
   transfer_db_data:
+  ledger_db_data:
