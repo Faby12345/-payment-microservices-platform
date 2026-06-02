@@ -10,7 +10,7 @@ done
 
 osascript <<EOF
 tell application "Terminal"
-  set serviceTitles to {"auth-service", "wallet-service", "transfer-service"}
+  set serviceTitles to {"auth-service", "wallet-service", "transfer-service", "ledger-service"}
   repeat with w in windows
     set shouldCloseWindow to false
     repeat with t in tabs of w
